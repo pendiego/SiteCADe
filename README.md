@@ -86,12 +86,17 @@ Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `
 1. **Banco:** crie um PostgreSQL (por exemplo Neon, pela Vercel Marketplace) e defina `DATABASE_URL`.
 2. **Blob:** crie um Vercel Blob no projeto (define `BLOB_READ_WRITE_TOKEN`).
 3. **Variáveis na Vercel** (Production e Preview): `DATABASE_URL`, `PAYLOAD_SECRET` (aleatório, ≥ 32 caracteres), `PAYLOAD_PUBLIC_SERVER_URL=https://cadeufpel.com`, `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` (remetente de um domínio verificado no Resend), mais `RESEND_TO`/`RESEND_FROM` se quiser mudar os padrões. O build falha em produção sem `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE`. Remova `SHEET_OPORTUNIDADES_CSV`, `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET`, se existirem.
-4. **Esquema e conteúdo iniciais**, uma vez, contra o banco de produção:
+4. **Esquema e conteúdo iniciais**, uma vez, contra o banco de produção. Os comandos `cms:*` carregam a configuração do Payload e precisam das variáveis **de Production** no ambiente. O `vercel env pull` baixa o ambiente Development por padrão, então peça Production explicitamente (o arquivo `.env.local` fica no Git ignorado; apague-o depois):
    ```sh
+   vercel env pull .env.local --environment=production
    npm run cms:migrate
-   CMS_ADMIN_EMAIL=voce@exemplo.com CMS_ADMIN_PASSWORD='senha-longa-e-unica' npm run cms:seed
    ```
-   Troque essa senha no primeiro acesso e crie os editores em Acesso → Usuários. Os comandos `cms:*` carregam a configuração do Payload, então exigem as mesmas variáveis do projeto no ambiente (por exemplo, `vercel env pull .env.local`).
+   Depois crie o primeiro administrador. No PowerShell:
+   ```powershell
+   $env:CMS_ADMIN_EMAIL='voce@exemplo.com'; $env:CMS_ADMIN_PASSWORD='senha-longa-e-unica'; npm run cms:seed
+   Remove-Item Env:CMS_ADMIN_EMAIL, Env:CMS_ADMIN_PASSWORD
+   ```
+   No bash: `CMS_ADMIN_EMAIL=voce@exemplo.com CMS_ADMIN_PASSWORD='senha-longa-e-unica' npm run cms:seed`. Confirme que o `DATABASE_URL` do `.env.local` é o do banco de produção antes de rodar. Troque a senha no primeiro acesso e crie os editores em Acesso → Usuários.
 5. Abra o PR `next-cms` → `main` e **valide no preview o que não foi possível testar localmente** (precisa do Blob e do Resend reais):
    - Upload de um PNG grande: deve virar WebP ≤ 2048 px, e a URL da imagem salva deve apontar direto para `*.public.blob.vercel-storage.com`.
    - Um nome de arquivo fora do padrão e um arquivo acima de 4 MiB devem ser recusados com mensagem clara.
