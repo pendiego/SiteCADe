@@ -3,6 +3,7 @@ import path from 'node:path'
 import { getPayload } from 'payload'
 import sharp from 'sharp'
 import config from '../payload.config'
+import { uploadLocalDev } from '../cms/collections/midia'
 import { normalizarNomeArquivo, validarUpload, limiteDimensaoPx } from '../cms/midia-regras'
 import { converterDados, type ResolverImagem } from '../cms/importacao'
 import { modelos } from '../cms/modelos'
@@ -20,6 +21,11 @@ const lerJson = async (arquivo: string): Promise<Record<string, unknown>> => {
 }
 
 const main = async (): Promise<void> => {
+  if (!process.env.BLOB_READ_WRITE_TOKEN && !uploadLocalDev) {
+    throw new Error(
+      'Defina BLOB_READ_WRITE_TOKEN (Blob de produção) ou CMS_UPLOAD_LOCAL=true (dev). Sem armazenamento o seed gravaria imagens sem arquivo.',
+    )
+  }
   const credenciais = lerCredenciaisAdmin(process.env)
   const payload = await getPayload({ config })
 
