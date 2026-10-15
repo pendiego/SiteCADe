@@ -1,4 +1,4 @@
-import { site, inicioSeo, quemSomos, guia, oportunidadesTexto, faq, lojinha, atalhos, paginas, galeria, integracoes, dadosOportunidades } from '@/lib/conteudo';
+import { getConteudo } from '@/lib/conteudo';
 import { oportunidadesPublicadas } from '@/lib/oportunidades';
 import { driveUrl } from '@/lib/links';
 
@@ -6,23 +6,26 @@ type Caminho = '/' | '/sobre' | '/contato' | '/privacidade' | '/galeria';
 type Institucional = 'sobre' | 'contato' | 'privacidade';
 
 // Ordem e rótulos das páginas do rodapé Markdown (rodapeMd(atual) omite a página atual).
-const PAGINAS_RODAPE: Record<Caminho, { rotulo: string; href: string }> = {
-  '/': { rotulo: 'Início', href: `${site.url}/` },
-  '/sobre': { rotulo: 'Sobre o CADe', href: `${site.url}/sobre` },
-  '/contato': { rotulo: 'Contato', href: `${site.url}/contato` },
-  '/privacidade': { rotulo: 'Privacidade', href: `${site.url}/privacidade` },
-  '/galeria': { rotulo: 'Histórico e galeria', href: `${site.url}/galeria` },
-};
-
-// Converte links relativos do conteúdo ("/sobre", "#agenda") em absolutos para agentes.
-export function absolutizar(md: string): string {
-  return md.replace(/\]\(\//g, `](${site.url}/`).replace(/\]\(#/g, `](${site.url}/#`);
+function paginasRodape(siteUrl: string): Record<Caminho, { rotulo: string; href: string }> {
+  return {
+    '/': { rotulo: 'Início', href: `${siteUrl}/` },
+    '/sobre': { rotulo: 'Sobre o CADe', href: `${siteUrl}/sobre` },
+    '/contato': { rotulo: 'Contato', href: `${siteUrl}/contato` },
+    '/privacidade': { rotulo: 'Privacidade', href: `${siteUrl}/privacidade` },
+    '/galeria': { rotulo: 'Histórico e galeria', href: `${siteUrl}/galeria` },
+  };
 }
 
-export function rodapeMd(atual: Caminho): string {
-  const links = (Object.keys(PAGINAS_RODAPE) as Caminho[])
+// Converte links relativos do conteúdo ("/sobre", "#agenda") em absolutos para agentes.
+export function absolutizar(md: string, siteUrl: string): string {
+  return md.replace(/\]\(\//g, `](${siteUrl}/`).replace(/\]\(#/g, `](${siteUrl}/#`);
+}
+
+export function rodapeMd(atual: Caminho, siteUrl: string): string {
+  const paginas = paginasRodape(siteUrl);
+  const links = (Object.keys(paginas) as Caminho[])
     .filter((c) => c !== atual)
-    .map((c) => `- [${PAGINAS_RODAPE[c].rotulo}](${PAGINAS_RODAPE[c].href})`)
+    .map((c) => `- [${paginas[c].rotulo}](${paginas[c].href})`)
     .join('\n');
   return [
     '## Páginas',
@@ -31,13 +34,14 @@ export function rodapeMd(atual: Caminho): string {
     '',
     '## Para agentes',
     '',
-    `- Instruções e casos de uso: [/llms.txt](${site.url}/llms.txt)`,
-    `- Mapa do site: [/sitemap.xml](${site.url}/sitemap.xml)`,
+    `- Instruções e casos de uso: [/llms.txt](${siteUrl}/llms.txt)`,
+    `- Mapa do site: [/sitemap.xml](${siteUrl}/sitemap.xml)`,
     '',
   ].join('\n');
 }
 
-export function mdInicio(hoje: Date): string {
+export async function mdInicio(hoje: Date): Promise<string> {
+  const { site, inicioSeo, quemSomos, guia, oportunidadesTexto, faq, lojinha, atalhos, integracoes, dadosOportunidades } = await getConteudo();
   const publicadas = oportunidadesPublicadas(dadosOportunidades.itens, hoje, site.instagramUrl);
   const guiaLead = guia.lead.replace(/\n+/g, ' ');
   const cardsGuia = guia.cards
@@ -95,12 +99,14 @@ export function mdInicio(hoje: Date): string {
       '',
       atalhosMd,
       '',
-      rodapeMd('/'),
+      rodapeMd('/', site.url),
     ].join('\n'),
+    site.url,
   );
 }
 
-export function mdInstitucional(slug: Institucional): string {
+export async function mdInstitucional(slug: Institucional): Promise<string> {
+  const { site, paginas } = await getConteudo();
   const p = paginas[slug];
   const secoes = p.secoes
     .map((s) => `## ${s.titulo}\n\n${s.corpo}`)
@@ -114,12 +120,14 @@ export function mdInstitucional(slug: Institucional): string {
       secoes,
       '',
       p.nota ? `${p.nota}\n` : '',
-      rodapeMd(`/${slug}` as Caminho),
+      rodapeMd(`/${slug}` as Caminho, site.url),
     ].join('\n'),
+    site.url,
   );
 }
 
-export function mdGaleria(): string {
+export async function mdGaleria(): Promise<string> {
+  const { site, galeria, integracoes } = await getConteudo();
   return absolutizar(
     [
       `# ${galeria.agentes.titulo}`,
@@ -134,7 +142,8 @@ export function mdGaleria(): string {
       '',
       `- [${galeria.driveRotulo}](${driveUrl(integracoes.drivePastaGaleria)})`,
       '',
-      rodapeMd('/galeria'),
+      rodapeMd('/galeria', site.url),
     ].join('\n'),
+    site.url,
   );
 }

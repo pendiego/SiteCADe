@@ -4,15 +4,14 @@ Página única do Centro Acadêmico de Design da UFPel, migrada de um design Fig
 
 ## Arquivos
 
-- `app/` — Next.js 16.4.0, App Router e TypeScript. `page.tsx` é a home; rotas públicas `/sobre`, `/contato`, `/privacidade` e `/galeria` têm seu próprio `page.tsx`. `layout.tsx` importa CSS global e define fontes/metadados comuns.
+- `app/(site)/` — site público (Next.js 16.4.0, App Router, TypeScript): home, `/sobre`, `/contato`, `/privacidade`, `/galeria`, rotas Markdown, `llms.txt` e APIs públicas (`enviar`, `oportunidades`, `404`). `layout.tsx` importa o CSS global.
+- `app/(payload)/` — painel `/admin` e REST do CMS em `/api/cms`. Arquivos gerados pelo Payload (`importMap.js`); não edite à mão. `app/global-not-found.tsx` é o 404 do site.
 - `components/` — markup React portado do site original. `'use client'` apenas para estado/efeitos; nenhuma IIFE legada.
-- `content/**/*.json` — fonte única de copy e configuração editável no Sveltia CMS. `lib/tipos.ts` e `lib/conteudo.ts` tipam os imports estáticos.
-- `lib/md-paginas.ts` e `app/*.md/route.ts` — representações Markdown geradas do conteúdo. `app/llms.txt/route.ts` usa `content/llms.json`.
+- `payload.config.ts` e `cms/` — Payload 3.90.2 (PostgreSQL, Vercel Blob, Resend). 21 globais estruturadas em `cms/modelos.ts` (+ `cms/campos.ts`), usuários e mídia em `cms/collections/`, acesso em `cms/access.ts`, seed em `scripts/cms-seed.ts`, migrações em `cms/migrations/`. Carga inicial em `cms/seed/*.json` (só leitura pelo seed; o conteúdo vivo está no banco).
+- `lib/conteudo.ts` — `getConteudo()` lê as globais, valida e projeta (`cms/projecao.ts`) para o contrato público de `lib/tipos.ts`. Não há conteúdo estático em runtime. `lib/md-paginas.ts` e `lib/seo.ts` são assíncronos e geram Markdown/SEO do mesmo conteúdo.
 - `app/styles/` — estilos globais mantidos: `base`, `nav`, `hero`, `agenda`, `secoes`, `componentes`, `icons`, `responsivo`, `institucional`, `galeria`, nessa ordem.
-- `public/assets/` — marca e fontes self-hosted; imagens CMS em `uploads/{gestao,produtos,guia,hero}/`. Caminhos públicos absolutos `/assets/...`; nomes ASCII/kebab-case minúsculos. Gestão e produtos usam `next/image`, sem variantes manuais.
-- `public/admin/` — Sveltia CMS via unpkg oficial e YAML das coleções. Backend `pendiego/SiteCADe@main`; os `name` de campos devem corresponder exatamente ao modelo JSON.
-- `app/api/` — formulários Resend, oportunidades do CMS, 404 Markdown e OAuth GitHub. Credenciais só em env vars.
-- `proxy.ts` — negociação de `Accept`; `next.config.ts` — redirects, headers e rewrite de `/admin`; `vercel.json` — preset `nextjs`.
+- `public/assets/` — marca, fontes e imagens estáticas. Imagens novas editáveis vão para o Blob via painel (PNG/JPEG/WebP, 5 MiB, `kebab-case`, convertidas para WebP).
+- `proxy.ts` — negociação de `Accept`; `next.config.ts` — redirects, headers e `withPayload`; `vercel.json` — preset `nextjs`.
 - `scripts/patch-next-vary.cjs` — correção reproduzível do bug de Vary do Next 16.4.0 no postinstall; reavaliar antes de atualizar a versão.
 - `test/` — contratos públicos e segurança, executados com `npm test` (Vitest).
 
@@ -24,7 +23,7 @@ Fonte do design: Figma `fFejL7f3oqdLNoPUqCwzD0` (arquivo "CADe - Landing Page").
 - **Tokens:** só as variáveis de `:root` (`--navy`, `--ciano`, `--verde`, `--amarelo`, `--rosa`, `--bg-*`, `--gut`, `--sec-y`, `--r-*`). Nunca hex solto no CSS novo.
 - **Tipografia:** LT Superior (self-hosted em `public/assets/font/`, formato `.woff2`) para tudo.
 - **`data-od-id`:** cada seção, heading, CTA, controle e card repetido tem um id kebab-case único. Mantenha ao editar e adicione em elementos novos.
-- **Dependências:** Next.js, React, TypeScript e marked são a stack aprovada. Não adicione framework, CDN ou biblioteca de animação sem pedido; a única CDN de JS é o Sveltia em `/admin`. Node alvo: 24.x.
+- **Dependências:** Next.js, React, TypeScript, marked e a stack Payload (`payload`, `@payloadcms/*`, `sharp`, `graphql`) são a stack aprovada. Não adicione framework, CDN ou biblioteca de animação sem pedido. Nenhum script de CDN no site nem no painel. Node alvo: 24.x.
 - **Ícones (Material Symbols):** todo ícone de UI é `<span className="m-icon" aria-hidden="true">{'\ue5c8'}</span>` com o codepoint PUA do subset self-hosted em `public/assets/font/`. Não use ligaduras de texto. Tamanho por `font-size` (`.m-icon` = 20px; modificadores `.m-icon--16`, `.m-icon--18`), nunca `width`/`height`. `aria-hidden` é obrigatório. Ícones são estáticos; cor padrão `currentColor`, marca fixa via token.
   - **Glifo novo:** o subset só traz os codepoints em uso. Adicionar ícone exige re-subsetar a fonte incluindo o novo codepoint, senão ele renderiza como retângulo vazio.
   - **Logos de marca** (GitHub, Instagram) não existem no Material Symbols: seguem SVG inline com `class="brand-icon"`.
@@ -40,7 +39,7 @@ Quatro `div.area` com fundo próprio, cada uma com uma `.faixa` colorida no topo
 |---|---|---|
 | CADe | `#area-cade` | hero, 01 agenda, 02 quem somos, 03 histórico, lojinha |
 | Calouros | `#area-calouros` | 04 guia do calouro (foto à esquerda + 4 cards) |
-| Dicas | `#area-dicas` | 05 oportunidades (`content/oportunidades.json`, editável pelo CMS), 06 FAQ, 07 atalhos |
+| Dicas | `#area-dicas` | 05 oportunidades (global `oportunidades-dados`, editável no painel), 06 FAQ, 07 atalhos |
 | Formulários | `#area-formularios` | 08 fale com a gente (dois forms) |
 
 A nav marca a área ativa via `aria-current="page"` (bolinha rosa em `::before`), calculada por listener de scroll com a constante `FOLGA` como margem de erro para áreas curtas.
@@ -52,7 +51,8 @@ A nav marca a área ativa via `aria-current="page"` (bolinha rosa em `::before`)
 3. Cheque os breakpoints existentes: 1180px, 900px, 720px e 400px. Sem scroll horizontal no mobile.
 4. Estados `hover`/`focus-visible` sempre com par fundo+texto definido; contraste nunca cai.
 5. **Sem telemetria:** não reintroduza bibliotecas, coletores de eventos ou scripts analíticos.
-6. **Verificação:** execute `npm test`, `npm run typecheck` e `npm run build`. Exercite o build com `npm start`: HTML deve preservar `Vary: Accept`, negociação Markdown e status 404. Testes isolados do proxy não detectam sobrescritas de headers pelo Next.
+6. **Verificação:** execute `npm test`, `npm run typecheck` e `npm run build`. Exercite o build com `npm start` contra um PostgreSQL real: HTML deve preservar `Vary: Accept`, negociação Markdown e status 404. Testes isolados do proxy não detectam sobrescritas de headers pelo Next.
+7. **CMS:** novo campo = editar `cms/modelos.ts`/`campos.ts` **e** gerar migração (`npm run cms:migrate:create`), `npm run cms:types` e, se mudar componentes do painel, `npm run cms:importmap`. Ids técnicos (`odId`) viram `data-od-id` públicos: não os altere em itens existentes. Nunca abra cadastro público nem dê escrita a usuários inativos; mantenha `papel` e `ativo` protegidos por acesso de campo.
 
 ## CodeGraph para agentes
 

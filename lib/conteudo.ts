@@ -1,74 +1,76 @@
+import 'server-only';
+import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
+import { getPayload, type GlobalSlug } from 'payload';
+import config from '@payload-config';
+import { modelos } from '@/cms/modelos';
+import { projetarDocumento } from '@/cms/projecao';
 import type {
-  InicioAgenda,
-  InicioAtalhos,
-  InicioFaq,
-  InicioFormularios,
-  InicioGuia,
-  InicioHero,
-  InicioHistorico,
-  InicioLojinha,
-  InicioOportunidades,
-  InicioQuemSomos,
-  InicioSeo,
-  Integracoes,
-  Llms,
-  Navegacao,
-  Oportunidades,
-  PaginaGaleria,
-  PaginaInstitucional,
-  Rodape,
-  Site,
+  InicioAgenda, InicioAtalhos, InicioFaq, InicioFormularios, InicioGuia,
+  InicioHero, InicioHistorico, InicioLojinha, InicioOportunidades,
+  InicioQuemSomos, InicioSeo, Integracoes, Llms, Navegacao, Oportunidades,
+  PaginaGaleria, PaginaInstitucional, Rodape, Site,
 } from '@/lib/tipos';
 
-import siteJson from '@/content/site.json';
-import navegacaoJson from '@/content/navegacao.json';
-import rodapeJson from '@/content/rodape.json';
-import integracoesJson from '@/content/integracoes.json';
-import llmsJson from '@/content/llms.json';
-import oportunidadesJson from '@/content/oportunidades.json';
-import inicioSeoJson from '@/content/inicio/seo.json';
-import heroJson from '@/content/inicio/hero.json';
-import agendaJson from '@/content/inicio/agenda.json';
-import quemSomosJson from '@/content/inicio/quem-somos.json';
-import historicoJson from '@/content/inicio/historico.json';
-import lojinhaJson from '@/content/inicio/lojinha.json';
-import guiaJson from '@/content/inicio/guia.json';
-import oportunidadesTextoJson from '@/content/inicio/oportunidades.json';
-import faqJson from '@/content/inicio/faq.json';
-import atalhosJson from '@/content/inicio/atalhos.json';
-import formulariosJson from '@/content/inicio/formularios.json';
-import sobreJson from '@/content/paginas/sobre.json';
-import contatoJson from '@/content/paginas/contato.json';
-import privacidadeJson from '@/content/paginas/privacidade.json';
-import galeriaJson from '@/content/paginas/galeria.json';
+export interface Conteudo {
+  site: Site;
+  navegacao: Navegacao;
+  rodape: Rodape;
+  integracoes: Integracoes;
+  llms: Llms;
+  dadosOportunidades: Oportunidades;
+  inicioSeo: InicioSeo;
+  hero: InicioHero;
+  agenda: InicioAgenda;
+  quemSomos: InicioQuemSomos;
+  historico: InicioHistorico;
+  lojinha: InicioLojinha;
+  guia: InicioGuia;
+  oportunidadesTexto: InicioOportunidades;
+  faq: InicioFaq;
+  atalhos: InicioAtalhos;
+  formularios: InicioFormularios;
+  galeria: PaginaGaleria;
+  paginas: { sobre: PaginaInstitucional; contato: PaginaInstitucional; privacidade: PaginaInstitucional };
+}
 
-// A tipagem faz o `next build` falhar se o CMS gravar um arquivo com forma errada.
-export const site: Site = siteJson;
-export const navegacao: Navegacao = navegacaoJson;
-export const rodape: Rodape = rodapeJson;
-export const integracoes: Integracoes = integracoesJson;
-export const llms: Llms = llmsJson;
-export const dadosOportunidades: Oportunidades = oportunidadesJson;
+const carregarConteudo = unstable_cache(async (): Promise<Conteudo> => {
+  const payload = await getPayload({ config });
+  const documentos = await Promise.all(modelos.map(async (modelo) => {
+    const documento = await payload.findGlobal({
+      slug: modelo.slug as GlobalSlug,
+      depth: 1,
+      overrideAccess: true,
+    });
+    return [modelo.chave, projetarDocumento(documento, modelo)] as const;
+  }));
+  const dados = Object.fromEntries(documentos);
+  return {
+    site: dados.site as unknown as Site,
+    navegacao: dados.navegacao as unknown as Navegacao,
+    rodape: dados.rodape as unknown as Rodape,
+    integracoes: dados.integracoes as unknown as Integracoes,
+    llms: dados.llms as unknown as Llms,
+    dadosOportunidades: dados.dadosOportunidades as unknown as Oportunidades,
+    inicioSeo: dados.inicioSeo as unknown as InicioSeo,
+    hero: dados.hero as unknown as InicioHero,
+    agenda: dados.agenda as unknown as InicioAgenda,
+    quemSomos: dados.quemSomos as unknown as InicioQuemSomos,
+    historico: dados.historico as unknown as InicioHistorico,
+    lojinha: dados.lojinha as unknown as InicioLojinha,
+    guia: dados.guia as unknown as InicioGuia,
+    oportunidadesTexto: dados.oportunidadesTexto as unknown as InicioOportunidades,
+    faq: dados.faq as unknown as InicioFaq,
+    atalhos: dados.atalhos as unknown as InicioAtalhos,
+    formularios: dados.formularios as unknown as InicioFormularios,
+    galeria: dados.galeria as unknown as PaginaGaleria,
+    paginas: {
+      sobre: dados['paginas.sobre'] as unknown as PaginaInstitucional,
+      contato: dados['paginas.contato'] as unknown as PaginaInstitucional,
+      privacidade: dados['paginas.privacidade'] as unknown as PaginaInstitucional,
+    },
+  };
+}, ['conteudo-cade'], { tags: ['conteudo-cade'], revalidate: 60 });
 
-export const inicioSeo: InicioSeo = inicioSeoJson;
-export const hero: InicioHero = heroJson;
-export const agenda: InicioAgenda = agendaJson;
-export const quemSomos: InicioQuemSomos = quemSomosJson;
-export const historico: InicioHistorico = historicoJson;
-export const lojinha: InicioLojinha = lojinhaJson;
-export const guia: InicioGuia = guiaJson;
-export const oportunidadesTexto: InicioOportunidades = oportunidadesTextoJson;
-export const faq: InicioFaq = faqJson;
-export const atalhos: InicioAtalhos = atalhosJson;
-export const formularios: InicioFormularios = formulariosJson;
-
-export const galeria: PaginaGaleria = galeriaJson;
-export const paginas: {
-  sobre: PaginaInstitucional;
-  contato: PaginaInstitucional;
-  privacidade: PaginaInstitucional;
-} = {
-  sobre: sobreJson,
-  contato: contatoJson,
-  privacidade: privacidadeJson,
-};
+/** Uma leitura por render; alterações no CMS invalidam o cache compartilhado. */
+export const getConteudo = cache(carregarConteudo);

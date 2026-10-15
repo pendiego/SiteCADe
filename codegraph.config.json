@@ -16,6 +16,8 @@
     ],
     "ignoreGlobs": [
       "public/assets/**",
+      "cms/media-local/**",
+      "cms/migrations/**",
       ".next/**",
       ".vercel/**",
       ".codegraph/**",

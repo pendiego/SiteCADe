@@ -2,6 +2,7 @@
 node_modules/
 .env
 .env.*
+!.env.example
 *.log
 .vercel
 .codegraph/
@@ -12,3 +13,4 @@ scratch/
 .next/
 next-env.d.ts
 *.tsbuildinfo
+cms/media-local/

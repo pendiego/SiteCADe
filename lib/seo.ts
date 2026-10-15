@@ -1,37 +1,37 @@
 import type { Metadata } from 'next';
-import { site } from '@/lib/conteudo';
-import type { Seo } from '@/lib/tipos';
+import { getConteudo } from '@/lib/conteudo';
+import type { Seo, Site } from '@/lib/tipos';
 
 // E-mail da coordenação aparece só no JSON-LD da página de contato (não é campo de site.json).
 const EMAIL_COORDENACAO = 'design.ufpel@gmail.com';
 
-const ENDERECO = {
-  '@type': 'PostalAddress',
-  streetAddress: site.endereco.rua,
-  addressLocality: site.endereco.cidade,
-  addressRegion: site.endereco.uf,
-  addressCountry: site.endereco.pais,
-};
+function endereco(site: Site) {
+  return {
+    '@type': 'PostalAddress',
+    streetAddress: site.endereco.rua,
+    addressLocality: site.endereco.cidade,
+    addressRegion: site.endereco.uf,
+    addressCountry: site.endereco.pais,
+  };
+}
 
-const UNIVERSIDADE = {
-  '@type': 'CollegeOrUniversity',
-  name: site.universidade.nome,
-  alternateName: site.universidade.sigla,
-  url: site.universidade.url,
-};
+function sameAs(site: Site) {
+  return [site.instagramUrl, site.githubUrl];
+}
 
-const SAME_AS = [site.instagramUrl, site.githubUrl];
+function contatoGeral(site: Site) {
+  return {
+    '@type': 'ContactPoint',
+    contactType: 'geral',
+    email: site.email,
+    availableLanguage: ['pt-BR'],
+  };
+}
 
-const CONTATO_GERAL = {
-  '@type': 'ContactPoint',
-  contactType: 'geral',
-  email: site.email,
-  availableLanguage: ['pt-BR'],
-};
-
-export function metadados({ caminho, seo, md }: { caminho: string; seo: Seo; md: string }): Metadata {
+export async function metadados({ caminho, seo, md }: { caminho: string; seo: Seo; md: string }): Promise<Metadata> {
+  const { site } = await getConteudo();
   const url = new URL(caminho, site.url).toString();
-  const imagem = `${site.url}${site.ogImagem}`;
+  const imagem = new URL(site.ogImagem, site.url).href;
   return {
     title: seo.titulo,
     description: seo.descricao,
@@ -54,7 +54,8 @@ export function metadados({ caminho, seo, md }: { caminho: string; seo: Seo; md:
   };
 }
 
-export function ldInicio() {
+export async function ldInicio() {
+  const { site } = await getConteudo();
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -74,20 +75,26 @@ export function ldInicio() {
         alternateName: site.nomesAlternativos,
         url: `${site.url}/`,
         logo: `${site.url}/assets/logo-cade.svg`,
-        image: `${site.url}${site.ogImagem}`,
+        image: new URL(site.ogImagem, site.url).href,
         description: site.descricaoOrganizacao,
         email: site.email,
-        address: ENDERECO,
+        address: endereco(site),
         areaServed: { '@type': 'Place', name: site.endereco.regiao },
-        parentOrganization: UNIVERSIDADE,
-        sameAs: SAME_AS,
-        contactPoint: [CONTATO_GERAL],
+        parentOrganization: {
+          '@type': 'CollegeOrUniversity',
+          name: site.universidade.nome,
+          alternateName: site.universidade.sigla,
+          url: site.universidade.url,
+        },
+        sameAs: sameAs(site),
+        contactPoint: [contatoGeral(site)],
       },
     ],
   };
 }
 
-export function ldSobre() {
+export async function ldSobre() {
+  const { site } = await getConteudo();
   return {
     '@context': 'https://schema.org',
     '@type': 'AboutPage',
@@ -102,15 +109,21 @@ export function ldSobre() {
       logo: `${site.url}/assets/logo-cade.svg`,
       email: site.email,
       foundingLocation: { '@type': 'Place', name: site.endereco.regiao },
-      address: ENDERECO,
-      contactPoint: [CONTATO_GERAL],
-      parentOrganization: UNIVERSIDADE,
-      sameAs: SAME_AS,
+      address: endereco(site),
+      contactPoint: [contatoGeral(site)],
+      parentOrganization: {
+        '@type': 'CollegeOrUniversity',
+        name: site.universidade.nome,
+        alternateName: site.universidade.sigla,
+        url: site.universidade.url,
+      },
+      sameAs: sameAs(site),
     },
   };
 }
 
-export function ldContato() {
+export async function ldContato() {
+  const { site } = await getConteudo();
   return {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
@@ -123,9 +136,9 @@ export function ldContato() {
       alternateName: site.nomesAlternativos.slice(0, 2),
       url: `${site.url}/`,
       email: site.email,
-      address: ENDERECO,
+      address: endereco(site),
       contactPoint: [
-        CONTATO_GERAL,
+        contatoGeral(site),
         {
           '@type': 'ContactPoint',
           contactType: 'coordenação do curso',
@@ -133,12 +146,13 @@ export function ldContato() {
           availableLanguage: ['pt-BR'],
         },
       ],
-      sameAs: SAME_AS,
+      sameAs: sameAs(site),
     },
   };
 }
 
-export function ldPrivacidade() {
+export async function ldPrivacidade() {
+  const { site } = await getConteudo();
   return {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
@@ -152,7 +166,7 @@ export function ldPrivacidade() {
       alternateName: site.nomesAlternativos.slice(0, 2),
       url: `${site.url}/`,
       email: site.email,
-      address: ENDERECO,
+      address: endereco(site),
       contactPoint: [
         {
           '@type': 'ContactPoint',
@@ -165,7 +179,8 @@ export function ldPrivacidade() {
   };
 }
 
-export function ldGaleria() {
+export async function ldGaleria() {
+  const { site } = await getConteudo();
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -179,8 +194,8 @@ export function ldGaleria() {
       url: `${site.url}/`,
       logo: `${site.url}/assets/logo-cade.svg`,
       email: site.email,
-      address: ENDERECO,
-      contactPoint: [CONTATO_GERAL],
+      address: endereco(site),
+      contactPoint: [contatoGeral(site)],
     },
   };
 }

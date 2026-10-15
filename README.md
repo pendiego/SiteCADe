@@ -2,120 +2,113 @@
 
 # CADe UFPel
 
-Site do Centro Acadêmico de Design da UFPel, migrado do Figma. Next.js 16.4.0 (App Router), React e TypeScript, com o CSS global original e conteúdo editável pelo Sveltia CMS.
+Site do Centro Acadêmico de Design da UFPel, migrado do Figma. Next.js 16.4.0 (App Router), React e TypeScript, com o CSS global original e conteúdo editável pelo **Payload CMS** (`/admin`) com login individual por e-mail e senha.
 
 **Ao vivo:** [cadeufpel.com](https://cadeufpel.com). A migração é desenvolvida na branch `next-cms`; a publicação depende da revisão e do merge em `main`.
 
+## Como o conteúdo funciona
+
+O painel e o site rodam no **mesmo projeto Next.js**. Todo o texto editável vive no **PostgreSQL**; imagens enviadas vão para o **Vercel Blob**. Ao salvar no painel o cache é invalidado e o site, o Markdown (`/index.md`, `/sobre.md`…), os metadados e `/api/oportunidades` mudam na hora. **Salvar não gera commit no GitHub.** O código (campos, permissões, componentes) continua versionado neste repositório.
+
+Os arquivos `cms/seed/**/*.json` são só a **carga inicial**: `npm run cms:seed` importa esse conteúdo para um banco vazio e não toca em nada que já exista. Depois disso, edite pelo painel, não pelos JSON.
+
 ## Desenvolvimento
 
-Requer Node.js **24.x**.
+Requer Node.js **24.x** e um PostgreSQL acessível.
 
 ```sh
 npm ci
+cp .env.example .env.local     # ou defina as variáveis abaixo no ambiente
+npm run cms:migrate            # cria as tabelas
+npm run cms:seed               # importa o conteúdo inicial e cria o 1º administrador
 npm run dev
 ```
 
-Abra `http://localhost:3000`. Para verificar a versão de produção:
+Painel: `http://localhost:3000/admin`. Verificação completa:
 
 ```sh
-npm test
-npm run typecheck
-npm run build
-npm start
+npm test && npm run typecheck && npm run build && npm start
 ```
 
-O `postinstall` aplica uma correção específica ao Next 16.4.0 para preservar o `Vary: Accept` do proxy nas respostas HTML. O bug upstream está descrito no [PR #92058](https://github.com/vercel/next.js/pull/92058). `scripts/patch-next-vary.cjs` trata os templates CommonJS e ESM usados pelo runtime Node, é idempotente e falha se a versão ou o template mudar. Antes de atualizar o Next, reavalie a correção com uma requisição HTTP real; não basta testar `proxy()` isoladamente. O projeto não usa runtime Edge nas páginas.
+O `postinstall` aplica uma correção específica ao Next 16.4.0 para preservar o `Vary: Accept` do proxy ([PR #92058](https://github.com/vercel/next.js/pull/92058)); ele falha se a versão ou o template do Next mudar. Reavalie com uma requisição HTTP real antes de atualizar o Next.
+
+### Variáveis de ambiente
+
+| Variável | Obrigatória | Uso |
+|---|---|---|
+| `DATABASE_URL` | sim | Conexão PostgreSQL |
+| `PAYLOAD_SECRET` | sim | Segredo longo e aleatório (sessões/JWT). Sem valor padrão |
+| `PAYLOAD_PUBLIC_SERVER_URL` | produção | Origem canônica (`https://cadeufpel.com`). Em preview usa `VERCEL_URL`; em dev, `http://localhost:3000` |
+| `BLOB_READ_WRITE_TOKEN` | produção | Armazenamento de imagens. Sem ele, o upload falha em produção |
+| `CMS_ADMIN_EMAIL`, `CMS_ADMIN_PASSWORD` | só no seed | Primeiro administrador. Sem padrões; o seed nunca altera uma conta existente |
+| `CMS_UPLOAD_LOCAL` | dev | `true` grava imagens em `cms/media-local/` (ignorado pelo Git e proibido em produção) |
+| `RESEND_API_KEY` | formulários | Chave do Resend para `/api/enviar` |
+| `RESEND_TO`, `RESEND_FROM` | não | Destinatário (padrão `cadesignufpel@gmail.com`) e remetente (padrão `CADe UFPel <naoresponda@cadeufpel.com>`) |
+| `CMS_RECUPERACAO_SENHA`, `CMS_VERIFICACAO_EMAIL`, `CMS_EMAIL_REMETENTE` | não | Ativam e-mails do CMS (exigem `RESEND_API_KEY`). Desligados por padrão: administradores redefinem senhas |
+
+## Acesso e permissões
+
+- Login **individual** por e-mail e senha (sessões revogáveis, cookie `HttpOnly`, bloqueio de 15 min após 5 falhas, JWT fora do corpo das respostas). Sem GitHub, Google ou tokens compartilhados.
+- **Não existe cadastro público.** Só administradores criam usuários, no painel (Acesso → Usuários).
+- **Administrador:** edita conteúdo, gerencia usuários, papéis e ativação.
+- **Editor:** edita conteúdo e mídia e o próprio perfil; não vê outros usuários, não promove papel, não cria contas.
+- Desativar um usuário derruba as sessões e bloqueia novo login. Conteúdo e imagens públicas são de leitura aberta; qualquer escrita exige conta ativa.
+- Uploads: PNG, JPEG ou WebP, até 5 MiB, nome em `kebab-case`, convertidos para WebP e limitados a 2048 × 2048. SVG é recusado.
 
 ## Estrutura
 
 | Caminho | Responsabilidade |
 |---|---|
-| `app/page.tsx` | Home com quatro áreas e as seções originais |
-| `app/{sobre,contato,privacidade,galeria}/page.tsx` | Páginas públicas |
-| `components/` | Markup React e interatividade; componentes cliente apenas onde necessário |
+| `app/(site)/` | Site público: home, `/sobre`, `/contato`, `/privacidade`, `/galeria`, Markdown, `llms.txt`, APIs públicas |
+| `app/(payload)/` | Painel `/admin` e REST do CMS em `/api/cms` (layout raiz isolado) |
+| `app/global-not-found.tsx` | 404 do site (HTML; Markdown para clientes programáticos via `proxy.ts`) |
+| `components/` | Markup React portado do site original |
 | `app/styles/` | CSS global na ordem original da cascata |
-| `content/**/*.json` | Copy, SEO, navegação, integrações, membros, produtos e oportunidades |
-| `lib/conteudo.ts`, `lib/tipos.ts` | Imports estáticos tipados; conteúdo incompatível impede o build |
-| `lib/md-paginas.ts`, `app/*.md/route.ts` | Representações Markdown geradas a partir do mesmo conteúdo |
-| `proxy.ts` | Negociação de `Accept` e 404 Markdown para clientes programáticos |
-| `app/api/` | Formulários Resend, oportunidades públicas, 404 e OAuth GitHub |
-| `public/admin/` | Sveltia CMS e configuração das coleções |
-| `public/assets/` | Fontes, marca e imagens; uploads organizados por gestão, produtos e guia |
-| `public/robots.txt`, `public/sitemap.xml` | Arquivos públicos de indexação |
-| `next.config.ts`, `vercel.json` | Redirects, headers, `/admin` e preset Next.js da Vercel |
-| `test/` | Contratos públicos, conteúdo/CMS e segurança de Markdown/OAuth |
+| `payload.config.ts`, `cms/` | Configuração, 21 globais estruturadas, usuários, mídia, acesso, seed, migrações |
+| `cms/seed/` | Carga inicial (somente leitura pelo seed) |
+| `cms/migrations/` | Migrações do PostgreSQL (versionadas) |
+| `lib/conteudo.ts` | Lê as globais no banco, valida e projeta para o contrato público; cache com tag `conteudo-cade` |
+| `lib/md-paginas.ts`, `lib/seo.ts` | Markdown para agentes e SEO gerados do mesmo conteúdo |
+| `proxy.ts`, `next.config.ts`, `vercel.json` | Negociação de `Accept`, redirects, headers e preset Next.js |
+| `public/assets/` | Fontes, marca e imagens estáticas |
+| `test/` | Contratos públicos, autorização, mídia, seed e projeção (Vitest) |
 
-As fontes LT Superior e Material Symbols continuam self-hosted. Fotos da gestão e produtos usam `next/image`; o Google Calendar e o Google Drive continuam sendo consultados no navegador. A chave Google é pública e restrita por referenciador, como antes; não é credencial OAuth.
-
-## Conteúdo e CMS
-
-Abra `/admin`. O Sveltia é carregado pelo script oficial do unpkg, sem build separado. As coleções são Configurações, Página inicial, Oportunidades e Páginas. Os rótulos dos campos estão em pt-BR.
-
-- **GitHub:** o CMS grava em `pendiego/SiteCADe`, branch `main`. Editores precisam de permissão **Write**. Um salvamento gera commit e aciona o deploy da Vercel.
-- **Local:** no Chrome/Edge, use “Work with Local Repository” e selecione a raiz deste repositório. Com `npm run dev` ativo, os JSON salvos são refletidos no HTML e no Markdown. A escolha da pasta exige o diálogo nativo do navegador.
-- **Preview da Vercel:** o popup OAuth entrega tokens apenas para `https://cadeufpel.com`. Use “Sign In Using Access Token” no preview, com um PAT de acesso ao repositório.
-- **Imagens:** uploads são limitados a 5 MiB, nomes convertidos para slug e imagens raster transformadas em WebP (qualidade 85, até 2048 × 2048). Pastas específicas por campo: gestão, produtos, guia e hero.
-- **IDs:** não altere identificadores técnicos de itens existentes; eles são os `data-od-id` públicos. `mascoteAlt` pode ficar vazio para imagens decorativas, preservando a acessibilidade original.
-
-Markdown editável aceita negrito, itálico e links. HTML bruto é escapado e links executáveis são recusados. As representações `/index.md`, `/sobre.md`, `/contato.md`, `/privacidade.md` e `/galeria.md` são geradas do conteúdo; `/llms.txt` vem de `content/llms.json`.
+Google Calendar e Drive continuam sendo consultados no navegador com a chave pública já restrita por referenciador.
 
 ## Oportunidades
 
-Edite a coleção **Oportunidades**, que salva `content/oportunidades.json`. A origem deixou de ser uma planilha. Foi migrada uma oportunidade publicada; como o endpoint antigo não expõe a data de expiração, o campo `expira` começa vazio.
-
-| Campo | Regra |
-|---|---|
-| `publicado` | Desmarcado: item não aparece |
-| `titulo` | Obrigatório; até 140 caracteres na resposta pública |
-| `tag` | Até 24 caracteres, em maiúsculas; vazio vira `OPORTUNIDADE` |
-| `cor` | `verde`, `amarelo` ou `ciano` |
-| `resumo` / `texto` | Texto do card e popup; popup usa o resumo se vazio |
-| `cta` / `link` | Rótulo e destino do botão; vazio/inválido usa os padrões públicos |
-| `expira` | Data inclusiva, comparada ao dia em São Paulo; vazio não expira |
-
-Home e `/index.md` revalidam a cada hora. `/api/oportunidades` mantém o contrato JSON `{ atualizado, oportunidades }`, limitado a 12 itens, com cache CDN de 5 minutos.
-
-## Formulários e OAuth
-
-Variáveis de ambiente configuradas na Vercel, nunca versionadas:
-
-| Variável | Uso |
-|---|---|
-| `RESEND_API_KEY` | Obrigatória para enviar formulários |
-| `RESEND_TO` | Destinatário; padrão `cadesignufpel@gmail.com` |
-| `RESEND_FROM` | Remetente; padrão `CADe UFPel <naoresponda@cadeufpel.com>` (domínio verificado no Resend) |
-| `GITHUB_CLIENT_ID` | OAuth App do CMS |
-| `GITHUB_CLIENT_SECRET` | Segredo do OAuth App do CMS |
-
-Os formulários mantêm honeypot, envio anônimo, validação e mensagens originais. O OAuth usa cookie CSRF HttpOnly, Secure, SameSite=Lax e expiração de 10 minutos. O token não é registrado no servidor e só é entregue ao popup com a origem de produção.
+Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `cor`, `resumo`, `texto`, `cta`, `link` e `expira` (data inclusiva, dia de São Paulo; vazio não expira). A resposta pública (`/api/oportunidades`) lista até 12 itens publicados e vigentes.
 
 ## Publicação — ações do dono do projeto
 
-1. Criar um GitHub OAuth App: Homepage `https://cadeufpel.com`; callback `https://cadeufpel.com/api/cms/callback`.
-2. Configurar `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` em Production e Preview da Vercel. Manter `RESEND_*` e remover a variável da planilha antiga.
-3. Conceder Write aos editores em `pendiego/SiteCADe`.
-4. Abrir PR `next-cms` → `main`; validar o preview, incluindo upload WebP e edição local do CMS; só então fazer merge.
-5. Em produção, entrar com GitHub em `/admin`, salvar um texto e confirmar commit e novo deploy. Estes passos não são realizados automaticamente pelo agente.
+1. **Banco:** crie um PostgreSQL (por exemplo Neon, pela Vercel Marketplace) e defina `DATABASE_URL`.
+2. **Blob:** crie um Vercel Blob no projeto (define `BLOB_READ_WRITE_TOKEN`).
+3. **Variáveis na Vercel** (Production e Preview): `DATABASE_URL`, `PAYLOAD_SECRET` (aleatório, ≥ 32 caracteres), `PAYLOAD_PUBLIC_SERVER_URL=https://cadeufpel.com`, `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY` (+ `RESEND_TO`/`RESEND_FROM`). Remova `SHEET_OPORTUNIDADES_CSV`, `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET`, se existirem.
+4. **Esquema e conteúdo iniciais**, uma vez, contra o banco de produção:
+   ```sh
+   npm run cms:migrate
+   CMS_ADMIN_EMAIL=voce@exemplo.com CMS_ADMIN_PASSWORD='senha-longa-e-unica' npm run cms:seed
+   ```
+   Troque essa senha no primeiro acesso e crie os editores em Acesso → Usuários.
+5. Abra o PR `next-cms` → `main`, valide o preview e faça o merge.
+6. Em mudanças futuras de campos, gere e versione uma migração (`npm run cms:migrate:create`) e rode `npm run cms:migrate` antes de publicar.
 
-O `vercel.json` seleciona o preset `nextjs`. Os aliases e hosts antigos continuam redirecionando para o domínio canônico sem `www`. Se a otimização de imagens da Vercel estiver indisponível, configure `images: { unoptimized: true }` no Next apenas após confirmar essa limitação.
+O `vercel.json` seleciona o preset `nextjs`. Hosts e aliases antigos continuam redirecionando para o domínio canônico sem `www`.
 
 ## Verificação
 
-A suíte cobre negociação, oportunidades e expiração, redirects, SEO, arquivos públicos, correspondência recursiva entre CMS e JSON, envio e OAuth. Além dela, exercite o build servido por `npm start`:
+A suíte cobre negociação, oportunidades, redirects, SEO e Markdown, formulários, autorização (anônimo, editor, administrador, conta desativada), regras de mídia, idempotência do seed e projeção do conteúdo. Complete com requisições reais ao build (`npm start`):
 
 ```sh
 curl -i -H "Accept: text/markdown" http://localhost:3000/sobre
 curl -I -H "Accept: text/html" http://localhost:3000/sobre
 curl -i http://localhost:3000/nao-existe
-curl -I http://localhost:3000/admin
 ```
 
-HTML deve conter `Vary: Accept` (também pode incluir headers internos do Next), link alternativo Markdown e ajuda para agentes. Caminho inexistente retorna 404, em Markdown por padrão ou HTML quando solicitado.
-
-Confira os breakpoints 1180, 900, 720 e 400px, além de 390px, sem overflow horizontal. Verifique hero, navegação sem hash, FAQ, modais e devolução de foco, agenda, galeria, gestão e estados dos formulários. Capturas da migração ficam em `scratch/baseline/` e `scratch/next/`, ignoradas pelo Git.
+HTML deve conter `Vary: Accept`, link alternativo Markdown e ajuda para agentes; caminho inexistente retorna 404. Confira 1180, 900, 720, 400 e 390 px sem overflow horizontal.
 
 ## Contribuição e CodeGraph
 
-Leia `AGENTS.md`. Copy oficial vem do Figma e deve ser preservada; use os tokens, Material Symbols por codepoint e identificadores estáveis. Não adicione analytics, pixels, beacons ou scripts externos de telemetria.
+Leia `AGENTS.md`. A copy oficial vem do Figma; use os tokens, Material Symbols por codepoint e identificadores estáveis. Não adicione analytics, pixels, beacons ou scripts externos de telemetria (o Payload está com `telemetry: false`).
 
-`codegraph.config.json` inclui HTML, CSS, JavaScript, TypeScript/TSX e Markdown, excluindo assets públicos, `.next/`, dependências, segredos e scratch. Confirme `codegraph version` e `codegraph --help` antes de consultar. Use MCP/CLI somente leitura, sem `init`/`index` sem autorização; confira `analysis`/`freshness`. A configuração MCP é do ambiente do agente e não deve ser alterada por uma tarefa do site.
+`codegraph.config.json` inclui HTML, CSS, JavaScript, TypeScript/TSX e Markdown, excluindo assets, `.next/`, dependências, mídia local, migrações, segredos e scratch. Confirme `codegraph version` e `codegraph --help` antes de consultar; use somente leitura e verifique `analysis`/`freshness`. A configuração MCP é do ambiente do agente.

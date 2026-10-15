@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withPayload } from '@payloadcms/next/withPayload';
 
 const HOSTS_ANTIGOS = ['cade.diegoruas.com.br', 'www.cadeufpel.com'];
 
@@ -11,6 +12,8 @@ const movidoPara = (source: string, destination: string) => ({
 const noindex = [{ key: 'X-Robots-Tag', value: 'noindex' }];
 
 const config: NextConfig = {
+  experimental: { globalNotFound: true },
+  images: { remotePatterns: [{ protocol: 'https', hostname: '*.public.blob.vercel-storage.com' }] },
   async redirects() {
     return [
       ...HOSTS_ANTIGOS.map((value) => ({
@@ -33,9 +36,6 @@ const config: NextConfig = {
     ];
   },
 
-  async rewrites() {
-    return [{ source: '/admin', destination: '/admin/index.html' }];
-  },
 
   async headers() {
     return [
@@ -57,4 +57,4 @@ const config: NextConfig = {
   },
 };
 
-export default config;
+export default withPayload(config);

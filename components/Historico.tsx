@@ -1,7 +1,12 @@
 import GaleriaCarrossel from '@/components/GaleriaCarrossel';
-import { historico as textos, integracoes } from '@/lib/conteudo';
+import type { InicioHistorico } from '@/lib/tipos';
 
-export default function Historico() {
+interface Props {
+  textos: InicioHistorico;
+  pastaId: string;
+}
+
+export default function Historico({ textos, pastaId }: Props) {
   return (
     <section className="sec wrap" id="historico" data-od-id="historico">
       <div className="sec-head">
@@ -10,7 +15,7 @@ export default function Historico() {
         <p className="lead">{textos.lead}</p>
         <p className="form-nota">{textos.nota}</p>
       </div>
-      <GaleriaCarrossel textos={textos} pastaId={integracoes.drivePastaGaleria} />
+      <GaleriaCarrossel textos={textos} pastaId={pastaId} />
       <noscript><p className="form-nota">{textos.noscript}</p></noscript>
       <a className="btn btn--ghost" href="/galeria" data-od-id="historico-ver-galeria" style={{ marginTop: '24px' }}>
         {textos.verTudoRotulo}{' '}
