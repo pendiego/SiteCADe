@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react';
-import { DIAS, HORARIOS, idHorario } from '@/lib/disponibilidade';
+import { DIAS, HORARIOS, idHorario, resumirDisponibilidade } from '@/lib/disponibilidade';
 import type { InicioFormularios } from '@/lib/tipos';
 
 type Formulario = 'participar' | 'falar';
@@ -26,19 +26,49 @@ export default function Formularios({ textos }: Props) {
     window.clearTimeout(temporizadores.current.falar);
   }, []);
 
+  const [escolhidos, setEscolhidos] = useState<Record<string, true>>({});
+  const marcados = Object.keys(escolhidos);
+
+  const alternar = (id: string) =>
+    setEscolhidos((atual) => {
+      const proximo = { ...atual };
+      if (proximo[id]) delete proximo[id];
+      else proximo[id] = true;
+      return proximo;
+    });
+
+  // Um clique no dia marca todos os horários dele; se já estiverem todos marcados, desmarca.
+  const alternarDia = (dia: string) =>
+    setEscolhidos((atual) => {
+      const ids = HORARIOS.map((horario) => idHorario(dia, horario));
+      const todos = ids.every((id) => atual[id]);
+      const proximo = { ...atual };
+      for (const id of ids) {
+        if (todos) delete proximo[id];
+        else proximo[id] = true;
+      }
+      return proximo;
+    });
+
+  useEffect(() => {
+    if (marcados.length === 0) return;
+    setErros((atual) =>
+      atual.participar === textos.participar.disponibilidadeErro ? { ...atual, participar: null } : atual,
+    );
+  }, [marcados.length, textos.participar.disponibilidadeErro]);
+
   const enviar = async (formulario: Formulario, e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const dados: Record<string, unknown> = Object.fromEntries(new FormData(form));
     if (formulario === 'falar') dados.anonimo = anonimo;
     if (formulario === 'participar') {
-      const disponibilidade = new FormData(form).getAll('disponibilidade');
-      if (disponibilidade.length === 0) {
+      if (marcados.length === 0) {
         setErros((atual) => ({ ...atual, participar: textos.participar.disponibilidadeErro }));
-        form.querySelector<HTMLInputElement>('input[name="disponibilidade"]')?.focus();
+        form.querySelector<HTMLElement>('.disp-dia')?.focus();
         return;
       }
-      dados.disponibilidade = disponibilidade;
+      dados.disponibilidade = marcados;
     }
 
     setEstados((atual) => ({ ...atual, [formulario]: 'enviando' }));
@@ -55,6 +85,7 @@ export default function Formularios({ textos }: Props) {
       window.clearTimeout(temporizadores.current[formulario]);
       temporizadores.current[formulario] = window.setTimeout(() => {
         form.reset();
+        if (formulario === 'participar') setEscolhidos({});
         if (formulario === 'falar') {
           setTipo('elogio');
           setAnonimo(false);
@@ -131,29 +162,47 @@ export default function Formularios({ textos }: Props) {
             <div className="disp-grade">
               <span aria-hidden="true" />
               {DIAS.map((dia) => (
-                <span key={dia.id} className="disp-dia" aria-hidden="true">{dia.curto}</span>
+                <button
+                  key={dia.id}
+                  type="button"
+                  className="disp-dia"
+                  aria-pressed={HORARIOS.every((horario) => escolhidos[idHorario(dia.id, horario)])}
+                  aria-label={`${dia.rotulo}: marcar ou desmarcar todos os horários`}
+                  data-od-id={`disponibilidade-dia-${dia.id}`}
+                  onClick={() => alternarDia(dia.id)}
+                >
+                  {dia.curto}
+                </button>
               ))}
-              {HORARIOS.map((horario) => (
-                <Fragment key={horario}>
-                  <span className="disp-hora" aria-hidden="true">{horario}</span>
-                  {DIAS.map((dia) => {
-                    const id = idHorario(dia.id, horario);
-                    return (
-                      <label key={id} className="disp-cel">
-                        <input
-                          type="checkbox"
-                          name="disponibilidade"
-                          value={id}
-                          aria-label={`${dia.rotulo}, ${horario}`}
-                          data-od-id={`disponibilidade-${id.replace(':', '')}`}
-                        />
-                        <span aria-hidden="true" />
-                      </label>
-                    );
-                  })}
-                </Fragment>
-              ))}
+              {HORARIOS.map((horario, indice) => {
+                const quebra = horario.endsWith(':00') && indice > 0 ? ' disp-quebra' : '';
+                return (
+                  <Fragment key={horario}>
+                    <span className={`disp-hora${quebra}`} aria-hidden="true">{horario.endsWith(':00') ? horario : ''}</span>
+                    {DIAS.map((dia) => {
+                      const id = idHorario(dia.id, horario);
+                      return (
+                        <label key={id} className={`disp-cel${quebra}`}>
+                          <input
+                            type="checkbox"
+                            name="disponibilidade"
+                            value={id}
+                            checked={Boolean(escolhidos[id])}
+                            onChange={() => alternar(id)}
+                            aria-label={`${dia.rotulo}, ${horario}`}
+                            data-od-id={`disponibilidade-${id.replace(':', '')}`}
+                          />
+                          <span aria-hidden="true" />
+                        </label>
+                      );
+                    })}
+                  </Fragment>
+                );
+              })}
             </div>
+            <p className="form-nota disp-resumo" aria-live="polite" hidden={marcados.length === 0}>
+              {marcados.length} {marcados.length === 1 ? 'horário marcado' : 'horários marcados'}: {resumirDisponibilidade(marcados)}
+            </p>
           </fieldset>
 
           <input className="hp" type="text" name="empresa" tabIndex={-1} autoComplete="off" aria-hidden="true" />

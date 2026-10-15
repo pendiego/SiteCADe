@@ -44,3 +44,20 @@ export function descreverDisponibilidade(ids: readonly string[]): string {
     return horarios.length > 0 ? [`${dia.rotulo}: ${horarios.join(', ')}`] : [];
   }).join('\n');
 }
+
+// "Seg 09:00–10:00, 14:30 · Qua 14:00": horários seguidos viram faixa (do primeiro ao último horário marcado).
+export function resumirDisponibilidade(ids: readonly string[]): string {
+  return DIAS.flatMap((dia) => {
+    const faixas: string[] = [];
+    let inicio = -1;
+    for (let i = 0; i <= HORARIOS.length; i++) {
+      const marcado = i < HORARIOS.length && ids.includes(idHorario(dia.id, HORARIOS[i]));
+      if (marcado && inicio < 0) inicio = i;
+      if (!marcado && inicio >= 0) {
+        faixas.push(i - 1 === inicio ? HORARIOS[inicio] : `${HORARIOS[inicio]}–${HORARIOS[i - 1]}`);
+        inicio = -1;
+      }
+    }
+    return faixas.length > 0 ? [`${dia.curto} ${faixas.join(', ')}`] : [];
+  }).join(' · ');
+}
