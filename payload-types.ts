@@ -786,6 +786,9 @@ export interface InicioFormulario {
       valor: string;
       id?: string | null;
     }[];
+    disponibilidadeRotulo: string;
+    disponibilidadeAjuda: string;
+    disponibilidadeErro: string;
     selecione: string;
     enviarRotulo: string;
     nota: string;
@@ -1391,6 +1394,9 @@ export interface InicioFormulariosSelect<T extends boolean = true> {
               valor?: T;
               id?: T;
             };
+        disponibilidadeRotulo?: T;
+        disponibilidadeAjuda?: T;
+        disponibilidadeErro?: T;
         selecione?: T;
         enviarRotulo?: T;
         nota?: T;

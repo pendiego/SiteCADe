@@ -168,6 +168,9 @@ export interface InicioFormularios {
     semestres: string[];
     areaRotulo: string;
     areas: string[];
+    disponibilidadeRotulo: string;
+    disponibilidadeAjuda: string;
+    disponibilidadeErro: string;
     selecione: string;
     enviarRotulo: string;
     nota: string;

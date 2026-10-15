@@ -1,3 +1,5 @@
+import { descreverDisponibilidade, normalizarDisponibilidade } from '@/lib/disponibilidade';
+
 const PADRAO_PARA = 'cadesignufpel@gmail.com';
 const PADRAO_DE = 'CADe UFPel <naoresponda@cadeufpel.com>';
 
@@ -45,7 +47,9 @@ async function lerCorpo(request: Request): Promise<Corpo> {
   try {
     corpo = await request.json();
   } catch {
-    corpo = Object.fromEntries(new URLSearchParams(await copia.text()));
+    const params = new URLSearchParams(await copia.text());
+    // o envio sem JavaScript repete `disponibilidade` por horário marcado; fromEntries guardaria só o último
+    corpo = { ...Object.fromEntries(params), disponibilidade: params.getAll('disponibilidade') };
   }
   return corpo && typeof corpo === 'object' ? (corpo as Corpo) : {};
 }
@@ -86,6 +90,10 @@ export async function POST(request: Request): Promise<Response> {
     if (!nome || !email) {
       return erro('Nome e e-mail são obrigatórios', 400);
     }
+    const disponibilidade = normalizarDisponibilidade(body.disponibilidade);
+    if (!disponibilidade) {
+      return erro('Informe ao menos um horário de disponibilidade', 400);
+    }
     assunto = `[CADe] Quero participar — ${String(nome)}`;
     html = [
       '<h2>Novo interesse em participar do CADe</h2>',
@@ -93,6 +101,7 @@ export async function POST(request: Request): Promise<Response> {
       campo('E-mail', email),
       campo('Semestre', semestre),
       campo('Onde quer ajudar', area),
+      campo('Disponibilidade para reunião', descreverDisponibilidade(disponibilidade)),
     ].join('');
   } else if (formulario === 'falar') {
     const { tipo, assunto: assuntoMsg, mensagem, anonimo, contato } = body;

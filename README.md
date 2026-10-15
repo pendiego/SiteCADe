@@ -104,8 +104,9 @@ Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `
    - Um nome de arquivo fora do padrão deve ser recusado com mensagem clara. Teste **dois** tamanhos: um arquivo de ~4,2 MB (deve mostrar a mensagem de limite) e um de 6 MB ou mais (a Vercel rejeita com 413; anote o que o painel mostra).
    - "Esqueceu a senha?": o e-mail chega, o link redefine a senha e o login seguinte funciona.
    - Login de um editor de teste: edita conteúdo, mas não cria usuário nem altera papel.
-6. Depois da validação, faça o merge.
-7. Em mudanças futuras de campos, gere e versione uma migração (`npm run cms:migrate:create`) e rode `npm run cms:migrate` antes de publicar.
+6. **Antes do merge**, rode `npm run cms:migrate` de novo contra o banco de produção (mesmo ambiente do passo 4). A migração `disponibilidade` adiciona três colunas à global de formulários e preenche os textos; o site publicado sem ela não consegue ler essa global e a home falha. Ela é segura com a linha já existente e pode ser repetida (migrações aplicadas são puladas). Preview e produção dividem o banco, então o preview atual continua funcionando depois dela.
+7. Depois da validação, faça o merge.
+8. Em mudanças futuras de campos, gere e versione uma migração (`npm run cms:migrate:create`) e rode `npm run cms:migrate` antes de publicar. Em coluna `NOT NULL` nova de uma global que já tem linha, a migração precisa adicionar a coluna nulável, preencher e só então exigir `NOT NULL` (veja `cms/migrations/*_disponibilidade.ts`).
 
 O `vercel.json` seleciona o preset `nextjs`. Hosts e aliases antigos continuam redirecionando para o domínio canônico sem `www`.
 

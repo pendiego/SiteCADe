@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react';
+import { DIAS, HORARIOS, idHorario } from '@/lib/disponibilidade';
 import type { InicioFormularios } from '@/lib/tipos';
 
 type Formulario = 'participar' | 'falar';
@@ -30,6 +31,15 @@ export default function Formularios({ textos }: Props) {
     const form = e.currentTarget;
     const dados: Record<string, unknown> = Object.fromEntries(new FormData(form));
     if (formulario === 'falar') dados.anonimo = anonimo;
+    if (formulario === 'participar') {
+      const disponibilidade = new FormData(form).getAll('disponibilidade');
+      if (disponibilidade.length === 0) {
+        setErros((atual) => ({ ...atual, participar: textos.participar.disponibilidadeErro }));
+        form.querySelector<HTMLInputElement>('input[name="disponibilidade"]')?.focus();
+        return;
+      }
+      dados.disponibilidade = disponibilidade;
+    }
 
     setEstados((atual) => ({ ...atual, [formulario]: 'enviando' }));
     setErros((atual) => ({ ...atual, [formulario]: null }));
@@ -115,6 +125,36 @@ export default function Formularios({ textos }: Props) {
               </select>
             </div>
           </div>
+          <fieldset className="disp" data-od-id="disponibilidade-participar">
+            <legend>{p.disponibilidadeRotulo}</legend>
+            <p className="form-nota">{p.disponibilidadeAjuda}</p>
+            <div className="disp-grade">
+              <span aria-hidden="true" />
+              {DIAS.map((dia) => (
+                <span key={dia.id} className="disp-dia" aria-hidden="true">{dia.curto}</span>
+              ))}
+              {HORARIOS.map((horario) => (
+                <Fragment key={horario}>
+                  <span className="disp-hora" aria-hidden="true">{horario}</span>
+                  {DIAS.map((dia) => {
+                    const id = idHorario(dia.id, horario);
+                    return (
+                      <label key={id} className="disp-cel">
+                        <input
+                          type="checkbox"
+                          name="disponibilidade"
+                          value={id}
+                          aria-label={`${dia.rotulo}, ${horario}`}
+                          data-od-id={`disponibilidade-${id.replace(':', '')}`}
+                        />
+                        <span aria-hidden="true" />
+                      </label>
+                    );
+                  })}
+                </Fragment>
+              ))}
+            </div>
+          </fieldset>
 
           <input className="hp" type="text" name="empresa" tabIndex={-1} autoComplete="off" aria-hidden="true" />
           <button className="btn btn--primary btn--bloco" type="submit" data-od-id="cta-participar" disabled={estados.participar !== null}>
