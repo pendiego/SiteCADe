@@ -1,4 +1,5 @@
-export const limiteTamanhoBytes = 5 * 1024 * 1024
+// 4 MiB: abaixo do limite de 4,5 MB do corpo de requisições das funções da Vercel, para o erro ser nosso e claro.
+export const limiteTamanhoBytes = 4 * 1024 * 1024
 export const limiteDimensaoPx = 2048
 
 const tiposAceitos: Record<string, readonly string[]> = {
@@ -33,7 +34,7 @@ export const validarUpload = (arquivo: { nome: string; mimeType: string; tamanho
     return 'Use nome em ASCII minúsculo com letras, números e hífen (kebab-case).'
   }
   if (arquivo.tamanho > limiteTamanhoBytes) {
-    return 'O arquivo excede 5 MiB.'
+    return 'O arquivo excede 4 MiB.'
   }
   return null
 }

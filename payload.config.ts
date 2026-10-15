@@ -4,7 +4,6 @@ import { pt } from '@payloadcms/translations/languages/pt'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { Midia } from './cms/collections/midia'
-import { podeGerenciarConteudo } from './cms/access'
 import { Usuarios } from './cms/collections/usuarios'
 import { adaptadorEmail, validarConfiguracaoEmail } from './cms/email'
 import { globais } from './cms/globals'
@@ -17,7 +16,7 @@ if (!process.env.PAYLOAD_SECRET) {
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL é obrigatório (PostgreSQL). Não há banco alternativo.')
 }
-validarConfiguracaoEmail()
+validarConfiguracaoEmail(process.env)
 
 // Origem canônica: explícita via env. Preview usa VERCEL_URL (fornecido pela plataforma).
 // Nunca deriva de conteúdo CMS nem de header da requisição.
@@ -68,15 +67,17 @@ export default buildConfig({
     push: false,
   }),
   // Blob só com token explícito. Sem token em produção, upload falha em cms/collections/midia.ts.
+  // Uploads passam sempre pelo servidor (validação e conversão para WebP); sem `clientUploads`.
+  // `disablePayloadAccessControl` grava a URL direta do Blob: as imagens (já públicas) não passam
+  // por uma função serverless a cada requisição e o remotePattern do next.config.ts é efetivamente usado.
   plugins: [
     vercelBlobStorage({
       enabled: Boolean(tokenBlob),
-      collections: { midia: true },
+      // Mantém o schema idêntico com e sem token (o plugin só cria o campo `prefix` quando ativo).
+      alwaysInsertFields: true,
+      collections: { midia: { disablePayloadAccessControl: true } },
       token: tokenBlob ?? '',
       access: 'public',
-      clientUploads: {
-        access: ({ req }) => podeGerenciarConteudo(req.user),
-      },
     }),
   ],
   typescript: { outputFile: 'payload-types.ts' },

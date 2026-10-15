@@ -197,6 +197,8 @@ export interface Usuario {
 export interface Midia {
   id: number;
   alt: string;
+  prefix?: string | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -325,6 +327,8 @@ export interface UsuariosSelect<T extends boolean = true> {
  */
 export interface MidiaSelect<T extends boolean = true> {
   alt?: T;
+  prefix?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

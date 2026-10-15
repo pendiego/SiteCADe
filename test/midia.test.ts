@@ -39,8 +39,8 @@ describe('validarUpload (cms/midia-regras)', () => {
     },
   );
 
-  it('aceita exatamente 5 MiB e rejeita um byte a mais', () => {
-    expect(limiteTamanhoBytes).toBe(5 * 1024 * 1024);
+  it('aceita exatamente 4 MiB e rejeita um byte a mais', () => {
+    expect(limiteTamanhoBytes).toBe(4 * 1024 * 1024);
     expect(validarUpload(arquivo({ tamanho: limiteTamanhoBytes }))).toBeNull();
     expect(validarUpload(arquivo({ tamanho: limiteTamanhoBytes + 1 }))).not.toBeNull();
   });

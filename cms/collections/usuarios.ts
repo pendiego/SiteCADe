@@ -6,7 +6,7 @@ import {
   podeAutenticar,
   podeGerenciarUsuarios,
 } from '../access'
-import { emailHabilitado } from '../email'
+import { verificacaoEmail } from '../email'
 
 const producao = process.env.NODE_ENV === 'production'
 const tempoBloqueio = 15 * 60 * 1000
@@ -22,10 +22,8 @@ export const Usuarios: CollectionConfig = {
     tokenExpiration: 8 * 60 * 60,
     useSessions: true,
     removeTokenFromResponses: true,
-    verify: emailHabilitado.verificacaoEmail,
-    forgotPassword: emailHabilitado.recuperacaoSenha
-      ? { expiration: 60 * 60 * 1000, minRequestInterval: 60 * 1000 }
-      : undefined,
+    verify: verificacaoEmail,
+    forgotPassword: { expiration: 60 * 60 * 1000, minRequestInterval: 60 * 1000 },
     cookies: {
       secure: producao,
       sameSite: 'Lax',

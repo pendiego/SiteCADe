@@ -3,19 +3,19 @@ import type { EmailAdapter } from 'payload'
 
 const verdadeiro = (valor: string | undefined): boolean => valor === 'true' || valor === '1'
 
-export const emailHabilitado = {
-  recuperacaoSenha: verdadeiro(process.env.CMS_RECUPERACAO_SENHA),
-  verificacaoEmail: verdadeiro(process.env.CMS_VERIFICACAO_EMAIL),
-}
+// Verificação de e-mail no cadastro é opcional (as contas são criadas por um administrador).
+export const verificacaoEmail = verdadeiro(process.env.CMS_VERIFICACAO_EMAIL)
 
-export const validarConfiguracaoEmail = (): void => {
-  const precisaEmail = emailHabilitado.recuperacaoSenha || emailHabilitado.verificacaoEmail
+// A recuperação de senha é sempre exposta pelo Payload ("Esqueceu a senha?"), então em produção o envio
+// precisa funcionar: sem chave e remetente o link quebraria para os editores.
+export const validarConfiguracaoEmail = (env: Record<string, string | undefined>): void => {
+  const precisaEmail = env.NODE_ENV === 'production' || verdadeiro(env.CMS_VERIFICACAO_EMAIL)
   if (!precisaEmail) return
-  if (!process.env.RESEND_API_KEY) {
-    throw new Error('RESEND_API_KEY é obrigatório quando CMS_RECUPERACAO_SENHA ou CMS_VERIFICACAO_EMAIL está ativo.')
+  if (!env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY é obrigatório em produção: a recuperação de senha do CMS depende do envio de e-mail.')
   }
-  if (!process.env.CMS_EMAIL_REMETENTE) {
-    throw new Error('CMS_EMAIL_REMETENTE é obrigatório quando o envio de e-mail do CMS está ativo.')
+  if (!env.CMS_EMAIL_REMETENTE) {
+    throw new Error('CMS_EMAIL_REMETENTE é obrigatório em produção (remetente verificado no Resend).')
   }
 }
 

@@ -42,9 +42,10 @@ O `postinstall` aplica uma correção específica ao Next 16.4.0 para preservar 
 | `BLOB_READ_WRITE_TOKEN` | produção | Armazenamento de imagens. Sem ele, o upload falha em produção |
 | `CMS_ADMIN_EMAIL`, `CMS_ADMIN_PASSWORD` | só no seed | Primeiro administrador. Sem padrões; o seed nunca altera uma conta existente |
 | `CMS_UPLOAD_LOCAL` | dev | `true` grava imagens em `cms/media-local/` (ignorado pelo Git e proibido em produção) |
-| `RESEND_API_KEY` | formulários | Chave do Resend para `/api/enviar` |
-| `RESEND_TO`, `RESEND_FROM` | não | Destinatário (padrão `cadesignufpel@gmail.com`) e remetente (padrão `CADe UFPel <naoresponda@cadeufpel.com>`) |
-| `CMS_RECUPERACAO_SENHA`, `CMS_VERIFICACAO_EMAIL`, `CMS_EMAIL_REMETENTE` | não | Ativam e-mails do CMS (exigem `RESEND_API_KEY`). Desligados por padrão: administradores redefinem senhas |
+| `RESEND_API_KEY` | produção | Chave do Resend: formulários (`/api/enviar`) e e-mails do CMS (recuperação de senha). Em produção o boot falha sem ela |
+| `CMS_EMAIL_REMETENTE` | produção | Remetente **verificado no Resend** dos e-mails do CMS (ex.: `cms@cadeufpel.com`). Em produção o boot falha sem ele |
+| `RESEND_TO`, `RESEND_FROM` | não | Destinatário (padrão `cadesignufpel@gmail.com`) e remetente (padrão `CADe UFPel <naoresponda@cadeufpel.com>`) dos formulários |
+| `CMS_VERIFICACAO_EMAIL` | não | `true` exige verificação de e-mail em novas contas (por padrão as contas são criadas por um administrador) |
 
 ## Acesso e permissões
 
@@ -53,7 +54,8 @@ O `postinstall` aplica uma correção específica ao Next 16.4.0 para preservar 
 - **Administrador:** edita conteúdo, gerencia usuários, papéis e ativação.
 - **Editor:** edita conteúdo e mídia e o próprio perfil; não vê outros usuários, não promove papel, não cria contas.
 - Desativar um usuário derruba as sessões e bloqueia novo login. Conteúdo e imagens públicas são de leitura aberta; qualquer escrita exige conta ativa.
-- Uploads: PNG, JPEG ou WebP, até 5 MiB, nome em `kebab-case`, convertidos para WebP e limitados a 2048 × 2048. SVG é recusado.
+- **Recuperação de senha:** o link "Esqueceu a senha?" envia um e-mail pelo Resend (válido por 1 h, um pedido por minuto). Por isso `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` são obrigatórios em produção; sem eles o link não funcionaria. Em desenvolvimento sem chave, o envio falha de forma explícita.
+- Uploads: PNG, JPEG ou WebP, até **4 MiB** (abaixo do limite de 4,5 MB do corpo de requisições da Vercel), nome em `kebab-case`, convertidos para WebP e limitados a 2048 × 2048. SVG é recusado. Todo upload passa pelo servidor (validação e conversão); as imagens são servidas por URL direta do Blob.
 
 ## Estrutura
 
@@ -83,15 +85,20 @@ Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `
 
 1. **Banco:** crie um PostgreSQL (por exemplo Neon, pela Vercel Marketplace) e defina `DATABASE_URL`.
 2. **Blob:** crie um Vercel Blob no projeto (define `BLOB_READ_WRITE_TOKEN`).
-3. **Variáveis na Vercel** (Production e Preview): `DATABASE_URL`, `PAYLOAD_SECRET` (aleatório, ≥ 32 caracteres), `PAYLOAD_PUBLIC_SERVER_URL=https://cadeufpel.com`, `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY` (+ `RESEND_TO`/`RESEND_FROM`). Remova `SHEET_OPORTUNIDADES_CSV`, `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET`, se existirem.
+3. **Variáveis na Vercel** (Production e Preview): `DATABASE_URL`, `PAYLOAD_SECRET` (aleatório, ≥ 32 caracteres), `PAYLOAD_PUBLIC_SERVER_URL=https://cadeufpel.com`, `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` (remetente de um domínio verificado no Resend), mais `RESEND_TO`/`RESEND_FROM` se quiser mudar os padrões. O build falha em produção sem `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE`. Remova `SHEET_OPORTUNIDADES_CSV`, `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET`, se existirem.
 4. **Esquema e conteúdo iniciais**, uma vez, contra o banco de produção:
    ```sh
    npm run cms:migrate
    CMS_ADMIN_EMAIL=voce@exemplo.com CMS_ADMIN_PASSWORD='senha-longa-e-unica' npm run cms:seed
    ```
-   Troque essa senha no primeiro acesso e crie os editores em Acesso → Usuários.
-5. Abra o PR `next-cms` → `main`, valide o preview e faça o merge.
-6. Em mudanças futuras de campos, gere e versione uma migração (`npm run cms:migrate:create`) e rode `npm run cms:migrate` antes de publicar.
+   Troque essa senha no primeiro acesso e crie os editores em Acesso → Usuários. Os comandos `cms:*` carregam a configuração do Payload, então exigem as mesmas variáveis do projeto no ambiente (por exemplo, `vercel env pull .env.local`).
+5. Abra o PR `next-cms` → `main` e **valide no preview o que não foi possível testar localmente** (precisa do Blob e do Resend reais):
+   - Upload de um PNG grande: deve virar WebP ≤ 2048 px, e a URL da imagem salva deve apontar direto para `*.public.blob.vercel-storage.com`.
+   - Um nome de arquivo fora do padrão e um arquivo acima de 4 MiB devem ser recusados com mensagem clara.
+   - "Esqueceu a senha?": o e-mail chega, o link redefine a senha e o login seguinte funciona.
+   - Login de um editor de teste: edita conteúdo, mas não cria usuário nem altera papel.
+6. Depois da validação, faça o merge.
+7. Em mudanças futuras de campos, gere e versione uma migração (`npm run cms:migrate:create`) e rode `npm run cms:migrate` antes de publicar.
 
 O `vercel.json` seleciona o preset `nextjs`. Hosts e aliases antigos continuam redirecionando para o domínio canônico sem `www`.
 

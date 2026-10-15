@@ -10,7 +10,7 @@ Página única do Centro Acadêmico de Design da UFPel, migrada de um design Fig
 - `payload.config.ts` e `cms/` — Payload 3.90.2 (PostgreSQL, Vercel Blob, Resend). 21 globais estruturadas em `cms/modelos.ts` (+ `cms/campos.ts`), usuários e mídia em `cms/collections/`, acesso em `cms/access.ts`, seed em `scripts/cms-seed.ts`, migrações em `cms/migrations/`. Carga inicial em `cms/seed/*.json` (só leitura pelo seed; o conteúdo vivo está no banco).
 - `lib/conteudo.ts` — `getConteudo()` lê as globais, valida e projeta (`cms/projecao.ts`) para o contrato público de `lib/tipos.ts`. Não há conteúdo estático em runtime. `lib/md-paginas.ts` e `lib/seo.ts` são assíncronos e geram Markdown/SEO do mesmo conteúdo.
 - `app/styles/` — estilos globais mantidos: `base`, `nav`, `hero`, `agenda`, `secoes`, `componentes`, `icons`, `responsivo`, `institucional`, `galeria`, nessa ordem.
-- `public/assets/` — marca, fontes e imagens estáticas. Imagens novas editáveis vão para o Blob via painel (PNG/JPEG/WebP, 5 MiB, `kebab-case`, convertidas para WebP).
+- `public/assets/` — marca, fontes e imagens estáticas. Imagens novas editáveis vão para o Blob via painel (PNG/JPEG/WebP, 4 MiB, `kebab-case`, convertidas para WebP no servidor; URL direta do Blob, sem `clientUploads`).
 - `proxy.ts` — negociação de `Accept`; `next.config.ts` — redirects, headers e `withPayload`; `vercel.json` — preset `nextjs`.
 - `scripts/patch-next-vary.cjs` — correção reproduzível do bug de Vary do Next 16.4.0 no postinstall; reavaliar antes de atualizar a versão.
 - `test/` — contratos públicos e segurança, executados com `npm test` (Vitest).

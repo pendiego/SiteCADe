@@ -25,6 +25,8 @@ export const Midia: CollectionConfig = {
           throw new APIError(
             'BLOB_READ_WRITE_TOKEN ausente em produção: upload indisponível.',
             500,
+            undefined,
+            true,
           )
         }
         if (req.file) {
