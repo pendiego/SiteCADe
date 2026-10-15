@@ -124,6 +124,7 @@ ul{margin:0;padding:0;list-style:none}
 .btn--navy{background:var(--navy);border-color:var(--navy);color:var(--branco)}
 .btn--ghost{background:var(--branco);border-color:var(--navy);color:var(--navy)}
 .btn--bloco{width:100%}
+.btn--bloqueado{opacity:.35;cursor:default;pointer-events:none}
 .btn--sm{padding:10px 20px;font-size:15px}
 .btn--sm svg,.btn--sm .m-icon{width:16px;height:16px;font-size:16px}
 
