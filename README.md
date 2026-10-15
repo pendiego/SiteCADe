@@ -90,12 +90,15 @@ Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `
    ```sh
    npm run cms:migrate
    ```
-   Depois crie o primeiro administrador. No PowerShell:
-   ```powershell
-   $env:CMS_ADMIN_EMAIL='voce@exemplo.com'; $env:CMS_ADMIN_PASSWORD='senha-longa-e-unica'; npm run cms:seed
-   Remove-Item Env:CMS_ADMIN_EMAIL, Env:CMS_ADMIN_PASSWORD
+   Depois crie o primeiro administrador. O comando pergunta o e-mail e a senha, para não haver valor de exemplo a colar e a senha não ficar no histórico do shell. Use um e-mail que você abre (ele recebe a recuperação de senha) e uma senha longa e única. No bash:
+   ```sh
+   read -rp 'E-mail: ' CMS_ADMIN_EMAIL; read -rsp 'Senha: ' CMS_ADMIN_PASSWORD; echo; export CMS_ADMIN_EMAIL CMS_ADMIN_PASSWORD; npm run cms:seed; unset CMS_ADMIN_EMAIL CMS_ADMIN_PASSWORD
    ```
-   No bash: `CMS_ADMIN_EMAIL=voce@exemplo.com CMS_ADMIN_PASSWORD='senha-longa-e-unica' npm run cms:seed`. Confirme que o `DATABASE_URL` do `.env.local` é o do banco de produção antes de rodar. Depois do seed, abra Mídias no painel e confirme que a URL de uma imagem aponta para `*.public.blob.vercel-storage.com`. Troque a senha no primeiro acesso e crie os editores em Acesso → Usuários.
+   No PowerShell:
+   ```powershell
+   $env:CMS_ADMIN_EMAIL = Read-Host 'E-mail'; $env:CMS_ADMIN_PASSWORD = Read-Host 'Senha' -MaskInput; npm run cms:seed; Remove-Item Env:CMS_ADMIN_EMAIL, Env:CMS_ADMIN_PASSWORD
+   ```
+   Confirme que o `DATABASE_URL` do `.env.local` é o do banco de produção antes de rodar. Depois do seed, abra Mídias no painel e confirme que a URL de uma imagem aponta para `*.public.blob.vercel-storage.com`. Troque a senha no primeiro acesso e crie os editores em Acesso → Usuários.
 5. Abra o PR `next-cms` → `main` e **valide no preview o que não foi possível testar localmente** (precisa do Blob e do Resend reais):
    - Upload de um PNG grande: deve virar WebP ≤ 2048 px, e a URL da imagem salva deve apontar direto para `*.public.blob.vercel-storage.com`.
    - Um nome de arquivo fora do padrão e um arquivo acima de 4 MiB devem ser recusados com mensagem clara.
