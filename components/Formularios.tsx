@@ -50,26 +50,29 @@ export default function Formularios({ textos }: Props) {
       return proximo;
     });
 
+  // Bloqueios do "Quero participar" só valem depois da hidratação: sem JavaScript o envio nativo segue livre.
+  const formParticipar = useRef<HTMLFormElement>(null);
+  const [hidratado, setHidratado] = useState(false);
+  const [camposPreenchidos, setCamposPreenchidos] = useState(false);
+
+  const conferirCampos = () => {
+    const form = formParticipar.current;
+    const nome = form?.elements.namedItem('nome');
+    // `required` aceita só espaços; o resto (e-mail válido, menus escolhidos) vem do checkValidity.
+    setCamposPreenchidos(Boolean(form && nome instanceof HTMLInputElement && nome.value.trim() !== '' && form.checkValidity()));
+  };
+
   useEffect(() => {
-    if (marcados.length === 0) return;
-    setErros((atual) =>
-      atual.participar === textos.participar.disponibilidadeErro ? { ...atual, participar: null } : atual,
-    );
-  }, [marcados.length, textos.participar.disponibilidadeErro]);
+    setHidratado(true);
+    conferirCampos();
+  }, []);
 
   const enviar = async (formulario: Formulario, e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const dados: Record<string, unknown> = Object.fromEntries(new FormData(form));
     if (formulario === 'falar') dados.anonimo = anonimo;
-    if (formulario === 'participar') {
-      if (marcados.length === 0) {
-        setErros((atual) => ({ ...atual, participar: textos.participar.disponibilidadeErro }));
-        form.querySelector<HTMLElement>('.disp-dia')?.focus();
-        return;
-      }
-      dados.disponibilidade = marcados;
-    }
+    if (formulario === 'participar') dados.disponibilidade = marcados;
 
     setEstados((atual) => ({ ...atual, [formulario]: 'enviando' }));
     setErros((atual) => ({ ...atual, [formulario]: null }));
@@ -85,7 +88,10 @@ export default function Formularios({ textos }: Props) {
       window.clearTimeout(temporizadores.current[formulario]);
       temporizadores.current[formulario] = window.setTimeout(() => {
         form.reset();
-        if (formulario === 'participar') setEscolhidos({});
+        if (formulario === 'participar') {
+          setEscolhidos({});
+          setCamposPreenchidos(false);
+        }
         if (formulario === 'falar') {
           setTipo('elogio');
           setAnonimo(false);
@@ -107,6 +113,13 @@ export default function Formularios({ textos }: Props) {
 
   const p = textos.participar;
   const f = textos.falar;
+  const liberado = !hidratado || camposPreenchidos;
+  const camposObrigatorios = `${p.nomeRotulo}, ${p.emailRotulo}, ${p.semestreRotulo} e ${p.areaRotulo}`.toLowerCase();
+  const aviso = !liberado
+    ? `Preencha ${camposObrigatorios} para liberar os horários.`
+    : marcados.length > 0
+      ? `${marcados.length} ${marcados.length === 1 ? 'horário marcado' : 'horários marcados'}: ${resumirDisponibilidade(marcados)}`
+      : p.disponibilidadeErro;
 
   return (
     <section className="sec wrap" data-od-id="participe">
@@ -123,6 +136,8 @@ export default function Formularios({ textos }: Props) {
           data-od-id="form-participar"
           action="/api/enviar"
           method="POST"
+          ref={formParticipar}
+          onChange={conferirCampos}
           onSubmit={(e) => enviar('participar', e)}
         >
           <h3>{p.titulo}</h3>
@@ -139,7 +154,7 @@ export default function Formularios({ textos }: Props) {
           <div className="campo-duplo">
             <div className="campo">
               <label htmlFor="p-semestre">{p.semestreRotulo}</label>
-              <select id="p-semestre" name="semestre" defaultValue="">
+              <select id="p-semestre" name="semestre" defaultValue="" required>
                 <option value="">{p.selecione}</option>
                 {p.semestres.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -148,7 +163,7 @@ export default function Formularios({ textos }: Props) {
             </div>
             <div className="campo">
               <label htmlFor="p-area">{p.areaRotulo}</label>
-              <select id="p-area" name="area" defaultValue="">
+              <select id="p-area" name="area" defaultValue="" required>
                 <option value="">{p.selecione}</option>
                 {p.areas.map((a) => (
                   <option key={a} value={a}>{a}</option>
@@ -156,7 +171,7 @@ export default function Formularios({ textos }: Props) {
               </select>
             </div>
           </div>
-          <fieldset className="disp" data-od-id="disponibilidade-participar">
+          <fieldset className="disp" data-od-id="disponibilidade-participar" disabled={!liberado}>
             <legend>{p.disponibilidadeRotulo}</legend>
             <p className="form-nota">{p.disponibilidadeAjuda}</p>
             <div className="disp-grade">
@@ -200,13 +215,16 @@ export default function Formularios({ textos }: Props) {
                 );
               })}
             </div>
-            <p className="form-nota disp-resumo" aria-live="polite" hidden={marcados.length === 0}>
-              {marcados.length} {marcados.length === 1 ? 'horário marcado' : 'horários marcados'}: {resumirDisponibilidade(marcados)}
-            </p>
+            <p className="form-nota disp-resumo" aria-live="polite">{aviso}</p>
           </fieldset>
 
           <input className="hp" type="text" name="empresa" tabIndex={-1} autoComplete="off" aria-hidden="true" />
-          <button className="btn btn--primary btn--bloco" type="submit" data-od-id="cta-participar" disabled={estados.participar !== null}>
+          <button
+            className="btn btn--primary btn--bloco"
+            type="submit"
+            data-od-id="cta-participar"
+            disabled={estados.participar !== null || (hidratado && (!camposPreenchidos || marcados.length === 0))}
+          >
             {estados.participar ? textos.mensagens[estados.participar] : p.enviarRotulo}
             {!estados.participar && <span className="m-icon" aria-hidden="true">{'\ue5c8'}</span>}
           </button>

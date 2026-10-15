@@ -212,19 +212,21 @@
   font:inherit;font-size:12px;font-weight:700;color:var(--navy);text-align:center;cursor:pointer;
   transition:background-color .18s ease,color .18s ease;
 }
-@media (hover:hover){.disp-dia:hover{background:var(--navy);color:var(--branco)}}
+@media (hover:hover){.disp-dia:not(:disabled):hover{background:var(--navy);color:var(--branco)}}
 .disp-dia[aria-pressed="true"]{background:var(--navy);color:var(--branco)}
 .disp-dia:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
 .disp-hora{padding-right:6px;font-variant-numeric:tabular-nums}
 .disp-quebra{margin-top:6px}
 .disp-resumo{color:var(--navy)}
+.disp:disabled .disp-grade{opacity:.45}
+.disp:disabled .disp-cel,.disp:disabled .disp-dia{cursor:not-allowed}
 .disp-cel{display:block;position:relative;cursor:pointer}
 .disp-cel input{position:absolute;opacity:0;width:0;height:0}
 .disp-cel span{
   display:block;min-height:24px;border:1px solid var(--navy-35);border-radius:6px;
   transition:background-color .18s ease,border-color .18s ease;
 }
-@media (hover:hover){.disp-cel:hover span{border-color:var(--navy)}}
+@media (hover:hover){.disp:not(:disabled) .disp-cel:hover span{border-color:var(--navy)}}
 .disp-cel input:checked+span{background:var(--navy);border-color:var(--navy)}
 .disp-cel input:focus-visible+span{outline:3px solid var(--navy);outline-offset:2px}
 .pills{display:flex;flex-wrap:wrap;gap:8px}
