@@ -1,193 +1,121 @@
-<p align="center">
-  <img src="assets/logo-cade.svg" alt="CADe UFPel" width="140">
-</p>
+<p align="center"><img src="public/assets/logo-cade.svg" alt="CADe UFPel" width="140"></p>
 
-<h1 align="center">CADe UFPel</h1>
+# CADe UFPel
 
-<p align="center">
-  <a href="https://cadeufpel.com"><img src="https://img.shields.io/website?url=https%3A%2F%2Fcadeufpel.com&label=site&up_message=online" alt="Status do site"></a>
-  <a href="https://vercel.com"><img src="https://img.shields.io/badge/deploy-Vercel-black?logo=vercel" alt="Deploy na Vercel"></a>
-  <img src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white" alt="HTML5">
-  <img src="https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white" alt="CSS3">
-  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black" alt="JavaScript">
-</p>
+Site do Centro Acadêmico de Design da UFPel, migrado do Figma. Next.js 16.4.0 (App Router), React e TypeScript, com o CSS global original e conteúdo editável pelo Sveltia CMS.
 
-Site do Centro Acadêmico de Design da UFPel, migrado de um design Figma. HTML, CSS e JS puros — sem build, framework ou CDN de JS.
+**Ao vivo:** [cadeufpel.com](https://cadeufpel.com). A migração é desenvolvida na branch `next-cms`; a publicação depende da revisão e do merge em `main`.
 
-**Ao vivo:** [cadeufpel.com](https://cadeufpel.com)
+## Desenvolvimento
 
----
+Requer Node.js **24.x**.
 
-## Stack
+```sh
+npm ci
+npm run dev
+```
 
-| Camada | Escolha |
+Abra `http://localhost:3000`. Para verificar a versão de produção:
+
+```sh
+npm test
+npm run typecheck
+npm run build
+npm start
+```
+
+O `postinstall` aplica uma correção específica ao Next 16.4.0 para preservar o `Vary: Accept` do proxy nas respostas HTML. O bug upstream está descrito no [PR #92058](https://github.com/vercel/next.js/pull/92058). `scripts/patch-next-vary.cjs` trata os templates CommonJS e ESM usados pelo runtime Node, é idempotente e falha se a versão ou o template mudar. Antes de atualizar o Next, reavalie a correção com uma requisição HTTP real; não basta testar `proxy()` isoladamente. O projeto não usa runtime Edge nas páginas.
+
+## Estrutura
+
+| Caminho | Responsabilidade |
 |---|---|
-| HTML/JS | `index.html` (raiz) e páginas secundárias em `paginas/*.html` (`/sobre`, `/contato`, `/privacidade`, `/galeria`), cada um com seu JS no fim do `<body>` (IIFEs separadas, uma por feature). Variantes Markdown públicas em `paginas/*.md` |
-| CSS | dividido em `css/*.css`, carregado via `<link>` no `<head>`, na ordem da cascata |
-| Tipografia | LT Superior, self-hosted em `assets/font/` (`.woff2`) |
-| Ícones | Google Material Symbols, self-hosted em `assets/font/material-symbols.woff2` (subset, ~1KB); logos de marca seguem SVG inline |
-| Backend | `api/enviar.js` — função serverless da Vercel para os formulários; `api/oportunidades.js` — lê a planilha CSV de oportunidades |
+| `app/page.tsx` | Home com quatro áreas e as seções originais |
+| `app/{sobre,contato,privacidade,galeria}/page.tsx` | Páginas públicas |
+| `components/` | Markup React e interatividade; componentes cliente apenas onde necessário |
+| `app/styles/` | CSS global na ordem original da cascata |
+| `content/**/*.json` | Copy, SEO, navegação, integrações, membros, produtos e oportunidades |
+| `lib/conteudo.ts`, `lib/tipos.ts` | Imports estáticos tipados; conteúdo incompatível impede o build |
+| `lib/md-paginas.ts`, `app/*.md/route.ts` | Representações Markdown geradas a partir do mesmo conteúdo |
+| `proxy.ts` | Negociação de `Accept` e 404 Markdown para clientes programáticos |
+| `app/api/` | Formulários Resend, oportunidades públicas, 404 e OAuth GitHub |
+| `public/admin/` | Sveltia CMS e configuração das coleções |
+| `public/assets/` | Fontes, marca e imagens; uploads organizados por gestão, produtos e guia |
+| `public/robots.txt`, `public/sitemap.xml` | Arquivos públicos de indexação |
+| `next.config.ts`, `vercel.json` | Redirects, headers, `/admin` e preset Next.js da Vercel |
+| `test/` | Contratos públicos, conteúdo/CMS e segurança de Markdown/OAuth |
 
-## Estrutura de pastas
+As fontes LT Superior e Material Symbols continuam self-hosted. Fotos da gestão e produtos usam `next/image`; o Google Calendar e o Google Drive continuam sendo consultados no navegador. A chave Google é pública e restrita por referenciador, como antes; não é credencial OAuth.
 
-```
-api/                  funções serverless (enviar.js, oportunidades.js, 404.js)
-assets/
-  font/               LT Superior self-hosted (.woff2)
-  FotosMembros/       fotos da gestão atual em ASCII/kebab-case (usadas em #o-cade)
-  logo-*.svg, mascote-*.svg, favicon.svg, apple-touch-icon.png, og-image.png
-  produto-*.webp      fotos da lojinha
-  guia-foto.webp      foto do guia do calouro
-css/*.css             ver "Arquivos de estilo"
-paginas/              páginas secundárias HTML e variantes públicas Markdown
-  contato.html, contato.md
-  galeria.html, galeria.md
-  privacidade.html, privacidade.md
-  sobre.html, sobre.md
-  index.md
-index.html            página principal (raiz)
-middleware.js         negociação de conteúdo (Accept: text/markdown)
-test/agentes.test.js  testes de rotas e contratos
-llms.txt, robots.txt, sitemap.xml, vercel.json
-```
+## Conteúdo e CMS
 
-## Páginas
+Abra `/admin`. O Sveltia é carregado pelo script oficial do unpkg, sem build separado. As coleções são Configurações, Página inicial, Oportunidades e Páginas. Os rótulos dos campos estão em pt-BR.
 
-- `index.html` — página principal (hero, agenda, quem somos, histórico, lojinha, guia do calouro, oportunidades, FAQ, formulários).
-- `paginas/sobre.html` — `/sobre`, quem somos, governança, financiamento e localização.
-- `paginas/contato.html` — `/contato`, canais de atendimento, e-mail e Instagram.
-- `paginas/privacidade.html` — `/privacidade`, política de privacidade e tratamento de dados dos formulários.
-- `paginas/galeria.html` — `/galeria`, histórico e fotos de eventos e gestões anteriores.
-- `paginas/*.md` — representações públicas em Markdown servidas via negociação `Accept: text/markdown` ou acessadas diretamente via `/<nome>.md`.
-- `llms.txt`, `robots.txt`, `sitemap.xml` — SEO, indexação e instruções para agentes.
+- **GitHub:** o CMS grava em `pendiego/SiteCADe`, branch `main`. Editores precisam de permissão **Write**. Um salvamento gera commit e aciona o deploy da Vercel.
+- **Local:** no Chrome/Edge, use “Work with Local Repository” e selecione a raiz deste repositório. Com `npm run dev` ativo, os JSON salvos são refletidos no HTML e no Markdown. A escolha da pasta exige o diálogo nativo do navegador.
+- **Preview da Vercel:** o popup OAuth entrega tokens apenas para `https://cadeufpel.com`. Use “Sign In Using Access Token” no preview, com um PAT de acesso ao repositório.
+- **Imagens:** uploads são limitados a 5 MiB, nomes convertidos para slug e imagens raster transformadas em WebP (qualidade 85, até 2048 × 2048). Pastas específicas por campo: gestão, produtos, guia e hero.
+- **IDs:** não altere identificadores técnicos de itens existentes; eles são os `data-od-id` públicos. `mascoteAlt` pode ficar vazio para imagens decorativas, preservando a acessibilidade original.
 
-## Arquivos de estilo
+Markdown editável aceita negrito, itálico e links. HTML bruto é escapado e links executáveis são recusados. As representações `/index.md`, `/sobre.md`, `/contato.md`, `/privacidade.md` e `/galeria.md` são geradas do conteúdo; `/llms.txt` vem de `content/llms.json`.
 
-| Arquivo | Conteúdo |
+## Oportunidades
+
+Edite a coleção **Oportunidades**, que salva `content/oportunidades.json`. A origem deixou de ser uma planilha. Foi migrada uma oportunidade publicada; como o endpoint antigo não expõe a data de expiração, o campo `expira` começa vazio.
+
+| Campo | Regra |
 |---|---|
-| `css/base.css` | `@font-face`, tokens `:root`, reset, tipografia, estrutura, botões, focus-visible |
-| `css/nav.css` · `css/hero.css` · `css/agenda.css` | seções 01, 02 e 03 |
-| `css/secoes.css` | 04 quem somos, 05 histórico/galeria, lojinha, 06 guia, 07 oportunidades, 08 FAQ, 09 links, 10 formulários, 11 footer |
-| `css/galeria.css` | layout de `galeria.html` |
-| `css/componentes.css` | faixa de fotos, popup de oportunidade, botão voltar ao topo |
-| `css/icons.css` | `@font-face` do Material Symbols + classes `.m-icon` / `.brand-icon` |
-| `css/responsivo.css` | todas as `@media` (1180, 900, 720, 400, reduced-motion) |
+| `publicado` | Desmarcado: item não aparece |
+| `titulo` | Obrigatório; até 140 caracteres na resposta pública |
+| `tag` | Até 24 caracteres, em maiúsculas; vazio vira `OPORTUNIDADE` |
+| `cor` | `verde`, `amarelo` ou `ciano` |
+| `resumo` / `texto` | Texto do card e popup; popup usa o resumo se vazio |
+| `cta` / `link` | Rótulo e destino do botão; vazio/inválido usa os padrões públicos |
+| `expira` | Data inclusiva, comparada ao dia em São Paulo; vazio não expira |
 
-## Estrutura da home
+Home e `/index.md` revalidam a cada hora. `/api/oportunidades` mantém o contrato JSON `{ atualizado, oportunidades }`, limitado a 12 itens, com cache CDN de 5 minutos.
 
-Quatro `div.area` com fundo próprio, cada uma com uma `.faixa` colorida no topo. Numeração das seções conforme os comentários em `css/*.css`:
+## Formulários e OAuth
 
-| Área | id | Seções |
-|---|---|---|
-| CADe | `#area-cade` | 01 nav, 02 hero, 03 agenda, 04 quem somos (`#o-cade`, com fotos da gestão), 05 histórico/galeria, lojinha |
-| Calouros | `#area-calouros` | 06 guia do calouro (`#guia-calouro`, foto à esquerda + 4 cards) |
-| Dicas | `#area-dicas` | 07 oportunidades (`#oportunidades`), 08 FAQ (`#faq`), 09 links (`#links`) |
-| Formulários | `#area-formularios` | 10 fale com a gente (`#participe`, dois forms) |
+Variáveis de ambiente configuradas na Vercel, nunca versionadas:
 
-11 (`css/secoes.css`) é o footer, fora das `.area`.
-
-A nav marca a área ativa via `aria-current="page"`, calculada por listener de scroll.
-
-## Formulário de contato
-
-`api/enviar.js` recebe os dois formulários do site e envia por e-mail via Resend. Env vars (Vercel → Project → Settings → Environment Variables):
-
-| Variável | Obrigatória | Padrão |
-|---|---|---|
-| `RESEND_API_KEY` | sim | — (nunca commitar) |
-| `RESEND_TO` | não | `cadesignufpel@gmail.com` |
-| `RESEND_FROM` | não | `CADe UFPel <onboarding@resend.dev>` (sandbox — trocar para domínio verificado) |
-
-## Publicar uma oportunidade
-
-Os cards de `#oportunidades` vêm da planilha Google publicada em CSV; não edite
-cards no `index.html`. O link da planilha é a URL configurada em
-`SHEET_OPORTUNIDADES_CSV` no painel da Vercel. Para abrir a planilha, copie essa
-URL ou use o link compartilhado pela gestão.
-
-| Coluna | Regra |
+| Variável | Uso |
 |---|---|
-| `publicado` | Só `sim`, `s`, `x`, `true` ou `1` publica a linha. |
-| `tag` | Pílula do card; vazio vira `OPORTUNIDADE`. |
-| `cor` | `verde`, `amarelo` ou `ciano`; inválida vira `verde`. |
-| `titulo` | Obrigatório; vazio ignora a linha. |
-| `resumo` | Linha opcional do card. |
-| `texto` | Texto do popup; vazio usa o resumo. |
-| `cta` | Rótulo do botão do popup; vazio usa `Quero essa oportunidade`. |
-| `link` | URL `http://`, `https://` ou `mailto:`; inválida abre o Instagram. |
-| `expira` | `AAAA-MM-DD` ou `DD/MM/AAAA`; some depois desse dia. |
+| `RESEND_API_KEY` | Obrigatória para enviar formulários |
+| `RESEND_TO` | Destinatário; padrão `cadesignufpel@gmail.com` |
+| `RESEND_FROM` | Remetente; padrão `CADe UFPel <naoresponda@cadeufpel.com>` (domínio verificado no Resend) |
+| `GITHUB_CLIENT_ID` | OAuth App do CMS |
+| `GITHUB_CLIENT_SECRET` | Segredo do OAuth App do CMS |
 
-Na Vercel, configure `SHEET_OPORTUNIDADES_CSV` em **Project → Settings →
-Environment Variables**, com a URL CSV de **Arquivo → Compartilhar → Publicar na
-web** da aba. Marque Production e Preview. A atualização pode levar até 5 minutos
-para aparecer no site por causa do cache do CDN.
+Os formulários mantêm honeypot, envio anônimo, validação e mensagens originais. O OAuth usa cookie CSRF HttpOnly, Secure, SameSite=Lax e expiração de 10 minutos. O token não é registrado no servidor e só é entregue ao popup com a origem de produção.
 
-## Rodando local
+## Publicação — ações do dono do projeto
 
-```sh
-npx vercel dev
-```
+1. Criar um GitHub OAuth App: Homepage `https://cadeufpel.com`; callback `https://cadeufpel.com/api/cms/callback`.
+2. Configurar `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` em Production e Preview da Vercel. Manter `RESEND_*` e remover a variável da planilha antiga.
+3. Conceder Write aos editores em `pendiego/SiteCADe`.
+4. Abrir PR `next-cms` → `main`; validar o preview, incluindo upload WebP e edição local do CMS; só então fazer merge.
+5. Em produção, entrar com GitHub em `/admin`, salvar um texto e confirmar commit e novo deploy. Estes passos não são realizados automaticamente pelo agente.
 
-Para testar o roteamento completo da Vercel (rewrites para `paginas/`, negociação Markdown via `middleware.js` e funções da `api/`). Para visualização puramente estática, também é possível usar `npx serve`.
+O `vercel.json` seleciona o preset `nextjs`. Os aliases e hosts antigos continuam redirecionando para o domínio canônico sem `www`. Se a otimização de imagens da Vercel estiver indisponível, configure `images: { unoptimized: true }` no Next apenas após confirmar essa limitação.
 
-## Deploy
+## Verificação
 
-Hospedado na **Vercel**, deploy automático a cada push em `main`. `vercel.json` define:
-
-- `cleanUrls` — URLs públicas limpas sem `.html`.
-- `rewrites` — roteamento transparente das URLs públicas para os arquivos correspondentes em `paginas/` e catch-all para `/api/404`.
-- `redirects` — redirecionamentos permanentes (308) de URLs legadas `.html` para URLs limpas, aliases em inglês e redirecionamento de hosts/domínios para o apex `cadeufpel.com`.
-- `Cache-Control` imutável (`max-age=31536000, immutable`) para as fontes em `assets/font/`.
-- `X-Content-Type-Options: nosniff`, `Vary: Accept` e links `rel="alternate"` para Markdown.
-
-## Contribuindo
-
-Antes de alterar, leia o [`AGENTS.md`](AGENTS.md) — convenções do projeto: tokens em `:root`, ids `data-od-id`, breakpoints (1180px, 900px, 720px, 400px), regras de ícones e de hover/focus-visible. A copy oficial vem do Figma e não deve ser inventada.
-
-## CodeGraph para agentes
-
-O escopo versionado do grafo está em [`codegraph.config.json`](codegraph.config.json).
-Ele inclui HTML, CSS, JavaScript (inclusive `api/` e `test/`) e Markdown, mas exclui
-`assets/`, fontes, imagens, binários, `.env*`, caches e saídas locais. Arquivos de
-rota (`vercel.json`, `robots.txt` e `sitemap.xml`) são lidos ao vivo quando
-necessário; não fazem parte das extensões descobertas. O `.gitignore` continua valendo.
-
-O comando disponível no ambiente deve ser verificado antes de qualquer consulta:
+A suíte cobre negociação, oportunidades e expiração, redirects, SEO, arquivos públicos, correspondência recursiva entre CMS e JSON, envio e OAuth. Além dela, exercite o build servido por `npm start`:
 
 ```sh
-codegraph version
-codegraph --help
+curl -i -H "Accept: text/markdown" http://localhost:3000/sobre
+curl -I -H "Accept: text/html" http://localhost:3000/sobre
+curl -i http://localhost:3000/nao-existe
+curl -I http://localhost:3000/admin
 ```
 
-Na CLI legada (1.6.0), a consulta usa `--path`:
+HTML deve conter `Vary: Accept` (também pode incluir headers internos do Next), link alternativo Markdown e ajuda para agentes. Caminho inexistente retorna 404, em Markdown por padrão ou HTML quando solicitado.
 
-```sh
-codegraph status .
-codegraph files --path . --format tree --max-depth 3
-codegraph query "preferMarkdown" --path . --json
-codegraph explore "formulários index api enviar Resend" --path . --max-files 4
-```
+Confira os breakpoints 1180, 900, 720 e 400px, além de 390px, sem overflow horizontal. Verifique hero, navegação sem hash, FAQ, modais e devolução de foco, agenda, galeria, gestão e estados dos formulários. Capturas da migração ficam em `scratch/baseline/` e `scratch/next/`, ignoradas pelo Git.
 
-As consultas estruturais da CLI legada pressupõem índice já criado; sem uma
-indexação autorizada, limite-se a `version`/`help` e à leitura direta dos arquivos.
+## Contribuição e CodeGraph
 
-Não execute `init`/`index` em uma tarefa somente de leitura: eles criam ou
-atualizam `.codegraph/`. A configuração `codegraph.config.json` só é aplicada
-por versões que a anunciam na ajuda; a CLI legada acima ignora esse arquivo.
-Após atualização para uma versão compatível, use `--root .` e consultas como
-`codegraph orient --root . --budget small --json`, `codegraph links --root . --json`,
-`codegraph unresolved --root . --json` e `codegraph deps api/enviar.js --root . --json`.
+Leia `AGENTS.md`. Copy oficial vem do Figma e deve ser preservada; use os tokens, Material Symbols por codepoint e identificadores estáveis. Não adicione analytics, pixels, beacons ou scripts externos de telemetria.
 
-Para Codex e Claude Code, a configuração MCP pertence ao ambiente do agente,
-não ao deploy deste site. Sem gravar configurações externas, pré-visualize:
-
-```sh
-codegraph install --print-config codex
-codegraph install --print-config claude
-codegraph install --target codex,claude --dry-run
-```
-
-Use MCP por stdio somente após confirmar a versão compatível e reinicie o
-cliente depois de instalar/atualizar o CodeGraph. Não exponha um servidor do
-grafo em uma porta pública. Ao interpretar respostas, confira `analysis`/
-`freshness` e trate `reduced`, `mixed` ou `stale` como evidência limitada.
+`codegraph.config.json` inclui HTML, CSS, JavaScript, TypeScript/TSX e Markdown, excluindo assets públicos, `.next/`, dependências, segredos e scratch. Confirme `codegraph version` e `codegraph --help` antes de consultar. Use MCP/CLI somente leitura, sem `init`/`index` sem autorização; confira `analysis`/`freshness`. A configuração MCP é do ambiente do agente e não deve ser alterada por uma tarefa do site.

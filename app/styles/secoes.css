@@ -1,0 +1,256 @@
+/* ============================================================
+   04 O que é o CADe
+   ============================================================ */
+.quem-txt{display:flex;flex-direction:column;gap:24px;margin-top:48px}
+.quem-txt p{font-size:clamp(16px,1.5vw,18px);line-height:1.65;max-width:62ch}
+.gestao{display:flex;flex-direction:column;gap:16px;margin-top:48px}
+.gestao-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.gestao-head b{font-size:12px;font-weight:600;letter-spacing:.96px}
+.gestao-head span{font-size:13px;font-weight:500}
+
+/* ============================================================
+   05 Histórico & Galeria
+   ============================================================ */
+.galeria-wrap{position:relative;margin-top:40px}
+.galeria{
+  display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,160px);
+  grid-auto-columns:min(300px,72vw);gap:16px;padding-block:6px;
+  overflow-x:auto;scroll-snap-type:x mandatory;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.galeria::-webkit-scrollbar{display:none}
+.gal-foto{
+  width:100%;height:100%;scroll-snap-align:start;
+  border:0;text-align:left;cursor:pointer;
+  border-radius:16px;padding:16px;display:flex;align-items:flex-end;
+  font-size:12px;font-weight:600;line-height:1.4;
+  transition:transform .18s ease;
+}
+/* cards do carrossel são sempre foto real (vindas do Drive): legenda em branco sobre o degradê */
+.galeria .gal-foto{position:relative;overflow:hidden}
+.galeria .gal-foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.galeria .gal-foto img~span{
+  position:relative;z-index:1;color:var(--branco);width:calc(100% + 32px);margin:-16px;padding:16px;
+  background:linear-gradient(0deg,rgba(11,11,109,.85),transparent 70%);
+}
+.gal-seta{
+  position:absolute;top:50%;translate:0 -50%;z-index:2;
+  width:44px;height:44px;border-radius:50%;flex:none;
+  background:#fff;border:1.5px solid var(--navy);color:var(--navy);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background-color .18s ease,opacity .18s ease;
+}
+.gal-seta--prev{left:8px}
+.gal-seta--next{right:8px}
+.gal-seta[disabled]{opacity:.35;cursor:default;pointer-events:none}
+
+/* ============================================================
+   Lojinha
+   ============================================================ */
+.loja-badge{
+  display:inline-flex;align-items:center;gap:8px;align-self:flex-start;
+  margin-top:4px;padding:8px 16px;border-radius:var(--r-pill);
+  background:var(--rosa-forte);color:var(--branco);text-decoration:none; /* --rosa puro só dá 3.55:1 com branco */
+  font-size:13px;font-weight:700;transition:background-color .18s ease,transform .18s ease;
+}
+.produtos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:40px}
+.produto{
+  background:#fff;border:1px solid var(--linha);border-radius:var(--r-painel);
+  padding:16px;display:flex;flex-direction:column;gap:12px;
+  text-decoration:none;color:var(--navy);
+  transition:border-color .18s ease,transform .18s ease;
+}
+.produto-img{position:relative;overflow:hidden;border-radius:12px}
+.produto-img img{width:100%;height:200px;object-fit:cover;display:block;transition:transform .3s ease}
+.produto-img::after{content:"";position:absolute;inset:0;z-index:1;background:var(--navy);opacity:0;transition:opacity .18s ease}
+.produto-hover{
+  position:absolute;z-index:2;top:50%;left:50%;translate:-50% -50%;
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  padding:10px 18px;border-radius:var(--r-pill);
+  background:#fff;color:var(--navy);font-size:13px;font-weight:700;
+  opacity:0;scale:.92;transition:opacity .18s ease,scale .18s ease;
+}
+.produto-hover svg{width:16px;height:16px;flex:none}
+.produto:focus-visible .produto-hover{opacity:1;scale:1}
+.produto b{font-size:20px;font-weight:700;line-height:1.2}
+.produto span{font-size:14px;color:var(--navy-70)}
+.produto-cta{
+  align-items:center;justify-content:center;text-align:center;gap:12px;
+  background:var(--navy);color:var(--branco);border-color:var(--navy);
+}
+.produto-cta span{color:rgba(246,246,246,.75)}
+.loja-nota{font-size:15px;color:var(--navy-75);margin-top:40px}
+
+/* ============================================================
+   06 Guia do Calouro
+   ============================================================ */
+.guia-corpo{display:grid;grid-template-columns:451px minmax(0,1fr);gap:40px;align-items:stretch;margin-top:40px}
+.guia-foto{
+  background:var(--ciano) center/cover no-repeat;border-radius:16px;min-height:360px;
+  display:flex;align-items:flex-end;padding:16px;
+  font-size:12px;font-weight:600;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);
+}
+.guia-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.card{
+  background:#fff;border:1px solid var(--linha);border-radius:var(--r-card);
+  padding:24px;display:flex;flex-direction:column;gap:12px;
+  text-decoration:none;color:var(--navy);text-align:left;width:100%;cursor:pointer;
+  transition:border-color .18s ease,transform .18s ease;
+}
+.card b{font-size:21px;font-weight:700;line-height:1.2;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card b svg{width:20px;height:20px;flex:none}
+.card p{font-size:15px;line-height:1.55}
+
+/* ============================================================
+   07 Oportunidades
+   ============================================================ */
+.op-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.op-head .sec-head{max-width:62ch}
+.op-head .lead{font-size:clamp(16px,1.5vw,18px)}
+.op-carrossel{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:16px;align-items:center;margin-top:40px}
+.oportunidades{display:flex;gap:16px;overflow:hidden;align-items:stretch}
+.oportunidades--vazio{display:block}
+.op-seta{
+  width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--navy);border-radius:50%;background:transparent;color:var(--navy);cursor:pointer;
+}
+.op-seta:disabled{opacity:.35;cursor:default}
+.op{flex:0 0 calc((100% - 32px) * .333333);min-width:0;
+  background:#fff;border:1.5px solid var(--navy);border-radius:var(--r-card);
+  padding:24px;display:flex;flex-direction:column;gap:12px;
+  font:inherit;color:var(--navy);text-align:left;cursor:pointer;
+  transition:background-color .18s ease,transform .18s ease;
+}
+@media (hover:hover){
+  .op-seta:not(:disabled):hover{background:var(--navy);color:var(--branco)}
+}
+.op-cta{
+  display:flex;align-items:center;gap:8px;margin-top:auto;
+  font-size:15px;font-weight:700;line-height:1.4;
+}
+.op-cta svg{width:20px;height:20px;flex:none}
+.tag{
+  align-self:flex-start;padding:4px 12px;border-radius:var(--r-pill);
+  font-size:11px;font-weight:600;line-height:1.4;letter-spacing:.66px;
+}
+.tag--verde{background:var(--verde)}
+.tag--amarelo{background:var(--amarelo)}
+.tag--ciano{background:var(--ciano)}
+.op b{font-size:21px;font-weight:700;line-height:1.2}
+.op span{font-size:15px;line-height:1.5}
+
+/* ============================================================
+   08 FAQ
+   ============================================================ */
+.faq-grid{display:grid;grid-template-columns:420px minmax(0,1fr);gap:64px}
+.faq-grid .sec-head p{font-size:clamp(15px,1.4vw,17px);line-height:1.6}
+.faq-grid .h-sec{font-size:clamp(30px,4.2vw,48px)}
+.faq-lista{display:flex;flex-direction:column;gap:12px}
+.faq{
+  background:#fff;border-radius:16px;border:1px solid transparent;
+  transition:background-color .18s ease,border-color .18s ease;
+}
+.faq[open]{background:var(--navy);border-color:var(--navy)}
+.faq summary{
+  list-style:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:20px 24px;font-size:17px;font-weight:700;line-height:1.4;min-height:44px;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq[open] summary{color:var(--branco);font-size:18px;line-height:1.3}
+.faq-icone{font-size:22px;flex:none}
+.faq[open] .faq-icone--mais{display:none}
+.faq:not([open]) .faq-icone--menos{display:none}
+.faq[open] .faq-icone--menos{font-size:28px}
+.faq-icone--mais{color:var(--rosa)}
+.faq-icone--menos{color:var(--amarelo)}
+.faq-resposta{padding:0 24px 20px;font-size:15px;line-height:1.6;color:var(--branco);max-width:70ch}
+.faq-resposta em{font-style:normal;opacity:.8}
+.faq-resposta a{color:var(--branco);text-decoration-color:var(--amarelo)}
+
+/* ============================================================
+   09 Links
+   ============================================================ */
+.links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:40px}
+.link-card{
+  background:#fff;border:1.5px solid var(--navy);border-radius:var(--r-card);
+  padding:24px;display:flex;flex-direction:column;gap:8px;text-decoration:none;color:var(--navy);
+  transition:background-color .18s ease,transform .18s ease;
+}
+.link-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.link-top b{font-size:20px;font-weight:700;line-height:1.4}
+.link-top svg{width:20px;height:20px;flex:none}
+.link-card span{font-size:15px;line-height:1.4}
+
+/* ============================================================
+   10 Formulários
+   ============================================================ */
+.forms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:40px}
+.form{
+  background:#fff;border:1px solid var(--linha);border-radius:24px;
+  padding:clamp(20px,3vw,32px);display:flex;flex-direction:column;gap:20px;
+}
+.form>p{font-size:16px;line-height:1.55}
+.campo{display:flex;flex-direction:column;gap:8px}
+.campo label{font-size:13px;font-weight:600;line-height:1.4}
+.campo input,.campo select,.campo textarea{
+  width:100%;font:inherit;font-size:16px;color:var(--navy);
+  background:var(--branco);border:1.5px solid var(--navy);border-radius:12px;
+  padding:12px 16px;min-height:44px;
+}
+.campo textarea{min-height:112px;resize:vertical;line-height:1.4}
+.campo ::placeholder{color:var(--navy-70)}
+.campo input:not(:placeholder-shown):invalid,
+.campo textarea:not(:placeholder-shown):invalid{border-color:var(--vermelho)}
+.campo-duplo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill input{position:absolute;opacity:0;width:0;height:0}
+.pill span{
+  display:inline-flex;align-items:center;min-height:44px;
+  padding:10px 18px;border-radius:var(--r-pill);
+  border:1px solid var(--navy-35);font-size:15px;cursor:pointer;
+  transition:background-color .18s ease,border-color .18s ease;
+}
+.pill input:checked+span{background:var(--navy);border-color:var(--navy);color:var(--branco);font-weight:700}
+.pill input:focus-visible+span{outline:3px solid var(--navy);outline-offset:2px}
+.check{display:flex;align-items:center;gap:10px;font-size:15px;cursor:pointer;min-height:44px}
+.check input{width:18px;height:18px;accent-color:var(--navy);flex:none}
+.form-nota{font-size:13px;line-height:1.4;color:var(--navy-70)}
+.form-nota--erro{color:var(--vermelho)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+
+/* ============================================================
+   11 Footer
+   ============================================================ */
+.footer{background:var(--navy);color:#fff;padding-block:64px 48px}
+.footer-top{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap}
+.footer-marca{display:flex;flex-direction:column;gap:16px;max-width:340px}
+.footer-marca img{height:64px;width:auto;align-self:flex-start}
+.footer-marca p{font-size:16px;line-height:1.6}
+.footer-col{display:flex;flex-direction:column;gap:12px;min-width:200px}
+.footer-col b{font-size:12px;font-weight:600;letter-spacing:.96px;color:var(--branco)}
+.footer-col a{font-size:15px;line-height:1.5;color:#fff;text-decoration:none;border-bottom:1px solid transparent;align-self:flex-start}
+.footer-rule{height:1px;background:rgba(255,213,0,.35);margin-block:48px}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;line-height:1.4}
+.footer-bottom a{color:inherit;text-decoration-color:var(--amarelo)}
+.footer-github{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+
+@media (hover:hover){
+  .gal-foto:hover{transform:translateY(-4px)}
+  .gal-seta:hover{background:#e2e4f2}
+  .loja-badge:hover{background:var(--navy);transform:translateY(-2px)}
+  .produto:hover{border-color:var(--navy);transform:translateY(-2px)}
+  .produto:hover .produto-img img{transform:scale(1.06)}
+  .produto:hover .produto-img::after{opacity:.5}
+  .produto:hover .produto-hover{opacity:1;scale:1}
+  .produto-cta:hover{background:var(--navy-hover);border-color:var(--navy-hover)}
+  a.card:hover,button.card:hover{border-color:var(--navy);transform:translateY(-2px)}
+  .op:hover{background:#e2e4f2;transform:translateY(-2px)}
+  .faq:not([open]):hover{background:#eceef8}
+  .faq[open]:hover{background:var(--navy-hover)}
+  .faq-resposta a:hover{color:var(--amarelo)}
+  .link-card:hover{background:#e2e4f2;transform:translateY(-2px)}
+  .pill span:hover{background:#e2e4f2;border-color:var(--navy)}
+  .footer-col a:hover{border-bottom-color:var(--amarelo)}
+  .footer-bottom a:hover{color:var(--amarelo)}
+}

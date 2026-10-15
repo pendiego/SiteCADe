@@ -7,11 +7,16 @@
       "**/*.css",
       "*.js",
       "**/*.js",
+      "*.ts",
+      "**/*.ts",
+      "*.tsx",
+      "**/*.tsx",
       "*.md",
       "**/*.md"
     ],
     "ignoreGlobs": [
-      "assets/**",
+      "public/assets/**",
+      ".next/**",
       ".vercel/**",
       ".codegraph/**",
       "node_modules/**",

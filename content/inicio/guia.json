@@ -1,0 +1,43 @@
+{
+  "eyebrow": "PRIMEIRO SEMESTRE",
+  "titulo": "Calouro? Respira. Tá tudo aqui.",
+  "lead": "As dúvidas que todo mundo tem na primeira semana, não sanou todas?\nEntre em contato com a gente!",
+  "foto": "/assets/uploads/guia/guia-foto.webp",
+  "fotoLegenda": "Recepção dos calouros",
+  "cards": [
+    {
+      "id": "card-cobalto",
+      "tipo": "link",
+      "titulo": "O que é Cobalto?",
+      "texto": "Onde ver horários, salas, matrículas, credenciais e material das aulas.",
+      "href": "https://cobalto.ufpel.edu.br"
+    },
+    {
+      "id": "card-materiais",
+      "tipo": "materiais",
+      "titulo": "Materiais do curso!",
+      "texto": "Dicas de matérias essenciais para o 1º semestre.",
+      "href": ""
+    },
+    {
+      "id": "card-onde",
+      "tipo": "link",
+      "titulo": "Se localiza aí!",
+      "texto": "Mapa interativo do CA, RUs, biblioteca e paradas de ônibus.",
+      "href": "https://wp.ufpel.edu.br/ca/"
+    },
+    {
+      "id": "card-com-quem-falar",
+      "tipo": "link",
+      "titulo": "Com quem falar?",
+      "texto": "Coordenação, CADe, veteranos, representantes de turma e ACCA.",
+      "href": "https://www.instagram.com/cadesignufpel"
+    }
+  ],
+  "materiais": {
+    "titulo": "Materiais do curso",
+    "carregando": "Carregando pastas…",
+    "vazio": "Nenhuma pasta encontrada.",
+    "erro": "Não foi possível carregar as pastas agora."
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "eyebrow": "ATALHOS",
+  "titulo": "Tudo que você sempre procura, num lugar só.",
+  "itens": [
+    {
+      "id": "link-cobalto",
+      "titulo": "Cobalto",
+      "subtitulo": "notas, horários e matrícula",
+      "href": "https://cobalto.ufpel.edu.br/",
+      "novaAba": true
+    },
+    {
+      "id": "link-curso",
+      "titulo": "Orientações Matrículas 2026.02",
+      "subtitulo": "grade, ementas e docentes",
+      "href": "https://docs.google.com/document/d/1RSZ2gnoxYYt5ci2teZBA4rbMwyvwBp5rpkTc_Mvmu6k/edit?tab=t.0#heading=h.q415mrnzivyb",
+      "novaAba": true
+    },
+    {
+      "id": "link-centro-artes",
+      "titulo": "Site do Centro de Artes",
+      "subtitulo": "estrutura, ateliês e avisos",
+      "href": "https://wp.ufpel.edu.br/ca/",
+      "novaAba": true
+    },
+    {
+      "id": "link-instagram",
+      "titulo": "@cadesignufpel",
+      "subtitulo": "nosso insta e dia a dia",
+      "href": "https://www.instagram.com/cadesignufpel",
+      "novaAba": false
+    },
+    {
+      "id": "link-coordenacao",
+      "titulo": "Contatos Coordenação",
+      "subtitulo": "contato e horários de atendimento dos profes",
+      "href": "mailto:design.ufpel@gmail.com",
+      "novaAba": false
+    },
+    {
+      "id": "link-biblioteca",
+      "titulo": "Biblioteca",
+      "subtitulo": "acervo e renovações",
+      "href": "https://pergamum.ufpel.edu.br/",
+      "novaAba": true
+    }
+  ]
+}

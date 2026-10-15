@@ -9,3 +9,6 @@ node_modules/
 graphify-out/
 CLAUDE.md
 scratch/
+.next/
+next-env.d.ts
+*.tsbuildinfo
