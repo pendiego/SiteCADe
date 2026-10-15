@@ -86,7 +86,7 @@ Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `
 1. **Banco:** crie um PostgreSQL (por exemplo Neon, pela Vercel Marketplace) e defina `DATABASE_URL`.
 2. **Blob:** crie um Vercel Blob no projeto (define `BLOB_READ_WRITE_TOKEN`).
 3. **Variáveis na Vercel** (Production e Preview): `DATABASE_URL`, `PAYLOAD_SECRET` (aleatório, ≥ 32 caracteres), `PAYLOAD_PUBLIC_SERVER_URL=https://cadeufpel.com`, `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` (remetente de um domínio verificado no Resend), mais `RESEND_TO`/`RESEND_FROM` se quiser mudar os padrões. O build falha em produção sem `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE`. Remova `SHEET_OPORTUNIDADES_CSV`, `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET`, se existirem.
-4. **Esquema e conteúdo iniciais**, uma vez, contra o banco de produção. Os comandos `cms:*` carregam a configuração do Payload e precisam das variáveis **de Production** no ambiente. O `vercel env pull` baixa o ambiente Development por padrão, então peça Production explicitamente (o arquivo `.env.local` fica no Git ignorado; apague-o depois):
+4. **Esquema e conteúdo iniciais**, uma vez, contra o banco de produção. Use **Node 24** (`engines.node` é `24.x`; confira com `node -v`): os comandos `cms:*` só foram verificados nele. Eles carregam a configuração do Payload e precisam das variáveis **de Production** no ambiente. O `vercel env pull` baixa o ambiente Development por padrão, então peça Production explicitamente (o arquivo `.env.local` fica no Git ignorado; apague-o depois):
    ```sh
    vercel env pull .env.local --environment=production
    npm run cms:migrate
