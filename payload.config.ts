@@ -18,13 +18,16 @@ if (!process.env.DATABASE_URL) {
 }
 validarConfiguracaoEmail(process.env)
 
-// Origem canônica: explícita via env. Preview usa VERCEL_URL (fornecido pela plataforma).
-// Nunca deriva de conteúdo CMS nem de header da requisição.
-const origemCanonica = process.env.PAYLOAD_PUBLIC_SERVER_URL
+// Origem canônica: explícita via env e obrigatória em produção. No preview da Vercel o NODE_ENV
+// também é `production`, mas o domínio canônico ainda não aponta para o preview: ali vale a
+// VERCEL_URL (fornecida pela plataforma) e a env canônica é ignorada. Nunca deriva de conteúdo
+// CMS nem de header da requisição.
+const preview = process.env.VERCEL_ENV === 'preview'
+const origemCanonica = preview ? undefined : process.env.PAYLOAD_PUBLIC_SERVER_URL
 const hostVercel = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined
 const origemDev = producao ? undefined : 'http://localhost:3000'
 
-if (producao && !origemCanonica) {
+if (producao && !preview && !origemCanonica) {
   throw new Error('PAYLOAD_PUBLIC_SERVER_URL é obrigatório em produção.')
 }
 

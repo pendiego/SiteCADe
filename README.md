@@ -38,7 +38,7 @@ O `postinstall` aplica uma correção específica ao Next 16.4.0 para preservar 
 |---|---|---|
 | `DATABASE_URL` | sim | Conexão PostgreSQL |
 | `PAYLOAD_SECRET` | sim | Segredo longo e aleatório (sessões/JWT). Sem valor padrão |
-| `PAYLOAD_PUBLIC_SERVER_URL` | produção | Origem canônica (`https://cadeufpel.com`). Em preview usa `VERCEL_URL`; em dev, `http://localhost:3000` |
+| `PAYLOAD_PUBLIC_SERVER_URL` | produção | Origem canônica (`https://cadeufpel.com`); defina **só em Production**. No preview da Vercel (`VERCEL_ENV=preview`) é ignorada e vale a `VERCEL_URL`, para que links de e-mail e URLs do admin apontem para o próprio preview. Em dev, `http://localhost:3000` |
 | `BLOB_READ_WRITE_TOKEN` | produção | Armazenamento de imagens. Sem ele, o upload falha em produção |
 | `CMS_ADMIN_EMAIL`, `CMS_ADMIN_PASSWORD` | só no seed | Primeiro administrador. Sem padrões; o seed nunca altera uma conta existente |
 | `CMS_UPLOAD_LOCAL` | dev | `true` grava imagens em `cms/media-local/` (ignorado pelo Git e proibido em produção) |
@@ -85,7 +85,7 @@ Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `
 
 1. **Banco:** crie um PostgreSQL (por exemplo Neon, pela Vercel Marketplace) e defina `DATABASE_URL`.
 2. **Blob:** crie um Vercel Blob no projeto (define `BLOB_READ_WRITE_TOKEN`).
-3. **Variáveis na Vercel** (Production e Preview): `DATABASE_URL`, `PAYLOAD_SECRET` (aleatório, ≥ 32 caracteres; use um valor diferente em cada ambiente), `PAYLOAD_PUBLIC_SERVER_URL=https://cadeufpel.com`, `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` (remetente de um domínio verificado no Resend), mais `RESEND_TO`/`RESEND_FROM` se quiser mudar os padrões. O build falha em produção sem `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE`. Remova `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET`, se existirem. **Só depois do merge** remova `SHEET_OPORTUNIDADES_CSV`: o site atual ainda a usa.
+3. **Variáveis na Vercel**: `DATABASE_URL`, `PAYLOAD_SECRET` (aleatório, ≥ 32 caracteres; valor diferente em cada ambiente), `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` (remetente de um domínio verificado no Resend), em Production e Preview; `PAYLOAD_PUBLIC_SERVER_URL=https://cadeufpel.com` **só em Production**; mais `RESEND_TO`/`RESEND_FROM` se quiser mudar os padrões. O build falha em produção sem `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE`, e sem `PAYLOAD_PUBLIC_SERVER_URL` fora do preview. Remova `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET`, se existirem. **Só depois do merge** remova `SHEET_OPORTUNIDADES_CSV`: o site atual ainda a usa.
 4. **Esquema e conteúdo iniciais**, uma vez, contra o banco de produção. Use **Node 24** (`engines.node` é `24.x`; confira com `node -v`): os comandos `cms:*` só foram verificados nele. Eles carregam a configuração do Payload, então precisam de um `.env.local` com `DATABASE_URL` (o **de produção**, copiado do painel do provedor), `PAYLOAD_SECRET` (qualquer valor com ≥ 32 caracteres; esses comandos não assinam sessões) e `PAYLOAD_PUBLIC_SERVER_URL`. Não use `vercel env pull` para isso: variáveis do tipo Secret/Sensitive não são baixadas. O `.env.local` fica no Git ignorado; apague-o depois.
    ```sh
    npm run cms:migrate
