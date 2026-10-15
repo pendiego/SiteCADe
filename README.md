@@ -55,7 +55,7 @@ O `postinstall` aplica uma correção específica ao Next 16.4.0 para preservar 
 - **Editor:** edita conteúdo e mídia e o próprio perfil; não vê outros usuários, não promove papel, não cria contas.
 - Desativar um usuário derruba as sessões e bloqueia novo login. Conteúdo e imagens públicas são de leitura aberta; qualquer escrita exige conta ativa.
 - **Recuperação de senha:** o link "Esqueceu a senha?" envia um e-mail pelo Resend (válido por 1 h, um pedido por minuto). Por isso `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` são obrigatórios em produção; sem eles o link não funcionaria. Em desenvolvimento sem chave, o envio falha de forma explícita.
-- Uploads: PNG, JPEG ou WebP, até **4 MiB** (abaixo do limite de 4,5 MB do corpo de requisições da Vercel), nome em `kebab-case`, convertidos para WebP e limitados a 2048 × 2048. SVG é recusado. Todo upload passa pelo servidor (validação e conversão); as imagens são servidas por URL direta do Blob.
+- Uploads: PNG, JPEG ou WebP, até **4 MiB**, nome em `kebab-case`, convertidos para WebP e limitados a 2048 × 2048. SVG é recusado. Todo upload passa pelo servidor (validação e conversão); as imagens são servidas por URL direta do Blob. **Limite da plataforma:** a Vercel rejeita corpos de requisição acima de ~4,5 MB (HTTP 413) antes de o Payload rodar. Entre 4 MiB e ~4,5 MB o painel mostra a nossa mensagem clara; acima disso o erro é genérico. Fotos de celular costumam passar disso: reduza ou exporte em WebP antes de enviar.
 
 ## Estrutura
 
@@ -101,7 +101,7 @@ Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `
    Confirme que o `DATABASE_URL` do `.env.local` é o do banco de produção antes de rodar. Depois do seed, abra Mídias no painel e confirme que a URL de uma imagem aponta para `*.public.blob.vercel-storage.com`. Troque a senha no primeiro acesso e crie os editores em Acesso → Usuários.
 5. Abra o PR `next-cms` → `main` e **valide no preview o que não foi possível testar localmente** (precisa do Blob e do Resend reais):
    - Upload de um PNG grande: deve virar WebP ≤ 2048 px, e a URL da imagem salva deve apontar direto para `*.public.blob.vercel-storage.com`.
-   - Um nome de arquivo fora do padrão e um arquivo acima de 4 MiB devem ser recusados com mensagem clara.
+   - Um nome de arquivo fora do padrão deve ser recusado com mensagem clara. Teste **dois** tamanhos: um arquivo de ~4,2 MB (deve mostrar a mensagem de limite) e um de 6 MB ou mais (a Vercel rejeita com 413; anote o que o painel mostra).
    - "Esqueceu a senha?": o e-mail chega, o link redefine a senha e o login seguinte funciona.
    - Login de um editor de teste: edita conteúdo, mas não cria usuário nem altera papel.
 6. Depois da validação, faça o merge.
