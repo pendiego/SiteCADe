@@ -113,7 +113,9 @@ export default function Formularios({ textos }: Props) {
 
   const p = textos.participar;
   const f = textos.falar;
-  const liberado = !hidratado || camposPreenchidos;
+  // O servidor já entrega o estado inicial (grade fechada), igual ao do navegador com JavaScript:
+  // nada encolhe na hidratação. Quem não tem JavaScript recebe a grade dentro do <noscript>.
+  const liberado = camposPreenchidos;
   const bloqueado = hidratado && (!camposPreenchidos || marcados.length === 0);
   const camposObrigatorios = `${p.nomeRotulo}, ${p.emailRotulo}, ${p.semestreRotulo} e ${p.areaRotulo}`.toLowerCase();
   const aviso = !liberado
@@ -121,6 +123,51 @@ export default function Formularios({ textos }: Props) {
     : marcados.length > 0
       ? `${marcados.length} ${marcados.length === 1 ? 'horário marcado' : 'horários marcados'}: ${resumirDisponibilidade(marcados)}`
       : p.disponibilidadeErro;
+
+  const ajuda = <p className="form-nota">{p.disponibilidadeAjuda}</p>;
+  const grade = (
+    <div className="disp-grade">
+      <span aria-hidden="true" />
+      {DIAS.map((dia) => (
+        <button
+          key={dia.id}
+          type="button"
+          className="disp-dia"
+          aria-pressed={HORARIOS.every((horario) => escolhidos[idHorario(dia.id, horario)])}
+          aria-label={`${dia.rotulo}: marcar ou desmarcar todos os horários`}
+          data-od-id={`disponibilidade-dia-${dia.id}`}
+          onClick={() => alternarDia(dia.id)}
+        >
+          {dia.curto}
+        </button>
+      ))}
+      {HORARIOS.map((horario, indice) => {
+        const quebra = horario.endsWith(':00') && indice > 0 ? ' disp-quebra' : '';
+        return (
+          <Fragment key={horario}>
+            <span className={`disp-hora${quebra}`} aria-hidden="true">{horario.endsWith(':00') ? horario : ''}</span>
+            {DIAS.map((dia) => {
+              const id = idHorario(dia.id, horario);
+              return (
+                <label key={id} className={`disp-cel${quebra}`}>
+                  <input
+                    type="checkbox"
+                    name="disponibilidade"
+                    value={id}
+                    checked={Boolean(escolhidos[id])}
+                    onChange={() => alternar(id)}
+                    aria-label={`${dia.rotulo}, ${horario}`}
+                    data-od-id={`disponibilidade-${id.replace(':', '')}`}
+                  />
+                  <span aria-hidden="true" />
+                </label>
+              );
+            })}
+          </Fragment>
+        );
+      })}
+    </div>
+  );
 
   return (
     <section className="sec wrap" data-od-id="participe">
@@ -174,50 +221,13 @@ export default function Formularios({ textos }: Props) {
           </div>
           <fieldset className="disp" data-od-id="disponibilidade-participar">
             <legend>{p.disponibilidadeRotulo}</legend>
-            {liberado && <p className="form-nota">{p.disponibilidadeAjuda}</p>}
-            {liberado && (
-              <div className="disp-grade">
-                <span aria-hidden="true" />
-                {DIAS.map((dia) => (
-                  <button
-                    key={dia.id}
-                    type="button"
-                    className="disp-dia"
-                    aria-pressed={HORARIOS.every((horario) => escolhidos[idHorario(dia.id, horario)])}
-                    aria-label={`${dia.rotulo}: marcar ou desmarcar todos os horários`}
-                    data-od-id={`disponibilidade-dia-${dia.id}`}
-                    onClick={() => alternarDia(dia.id)}
-                  >
-                    {dia.curto}
-                  </button>
-                ))}
-                {HORARIOS.map((horario, indice) => {
-                  const quebra = horario.endsWith(':00') && indice > 0 ? ' disp-quebra' : '';
-                  return (
-                    <Fragment key={horario}>
-                      <span className={`disp-hora${quebra}`} aria-hidden="true">{horario.endsWith(':00') ? horario : ''}</span>
-                      {DIAS.map((dia) => {
-                        const id = idHorario(dia.id, horario);
-                        return (
-                          <label key={id} className={`disp-cel${quebra}`}>
-                            <input
-                              type="checkbox"
-                              name="disponibilidade"
-                              value={id}
-                              checked={Boolean(escolhidos[id])}
-                              onChange={() => alternar(id)}
-                              aria-label={`${dia.rotulo}, ${horario}`}
-                              data-od-id={`disponibilidade-${id.replace(':', '')}`}
-                            />
-                            <span aria-hidden="true" />
-                          </label>
-                        );
-                      })}
-                    </Fragment>
-                  );
-                })}
-              </div>
-            )}
+            {liberado && ajuda}
+            {liberado && grade}
+            <noscript>
+              {ajuda}
+              {grade}
+              <style>{'.disp-resumo{display:none}'}</style>
+            </noscript>
             <p className="form-nota disp-resumo" aria-live="polite">{aviso}</p>
           </fieldset>
 
