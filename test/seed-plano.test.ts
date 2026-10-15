@@ -42,4 +42,10 @@ describe('lerCredenciaisAdmin', () => {
   it('falha sem senha, sem padrão', () => {
     expect(() => lerCredenciaisAdmin({ CMS_ADMIN_EMAIL: 'admin@cadeufpel.com.br' })).toThrow(/CMS_ADMIN_PASSWORD/);
   });
+
+  it('recusa o e-mail e a senha de exemplo da documentação', () => {
+    expect(() => lerCredenciaisAdmin({ CMS_ADMIN_EMAIL: 'voce@exemplo.com', CMS_ADMIN_PASSWORD: 'segredo-longo' })).toThrow(/exemplo/);
+    expect(() => lerCredenciaisAdmin({ CMS_ADMIN_EMAIL: 'Voce@Example.com', CMS_ADMIN_PASSWORD: 'segredo-longo' })).toThrow(/exemplo/);
+    expect(() => lerCredenciaisAdmin({ CMS_ADMIN_EMAIL: 'admin@cadeufpel.com.br', CMS_ADMIN_PASSWORD: 'senha-longa-e-unica' })).toThrow(/senha de exemplo/);
+  });
 });
