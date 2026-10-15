@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { setTimeout as esperar } from 'node:timers/promises'
 import { getPayload } from 'payload'
 import sharp from 'sharp'
 import config from '../payload.config'
@@ -9,7 +10,10 @@ import { converterDados, type ResolverImagem } from '../cms/importacao'
 import { modelos } from '../cms/modelos'
 import { lerCredenciaisAdmin, planejarSeed } from '../cms/seed-plano'
 
-const contexto = { importacaoInicial: true }
+// Um objeto novo a cada uso: o plugin do Blob grava `skipCloudStorage` no `context` da requisição
+// durante o upload. Compartilhado, esse objeto ficaria marcado e as criações seguintes gravariam
+// a linha no banco sem enviar o arquivo, sem nenhum erro.
+const contexto = (): Record<string, unknown> => ({ importacaoInicial: true })
 
 const ehRegistro = (valor: unknown): valor is Record<string, unknown> =>
   typeof valor === 'object' && valor !== null && !Array.isArray(valor)
@@ -68,7 +72,7 @@ const main = async (): Promise<void> => {
             data: { alt: nome.replace(/\.webp$/, '').replace(/-/g, ' ') },
             file: { data: convertido, mimetype: 'image/webp', name: nome, size: convertido.byteLength },
             overrideAccess: true,
-            context: contexto,
+            context: contexto(),
           })
         ).id
     midiaPorCaminho.set(caminho, id)
@@ -79,7 +83,7 @@ const main = async (): Promise<void> => {
     if (!plano.criarGlobais.includes(modelo.chave)) continue
     const dados = await lerJson(modelo.arquivo)
     const data = await converterDados(modelo.fields, dados, resolverImagem)
-    await payload.updateGlobal({ slug: modelo.slug, data, overrideAccess: true, context: contexto })
+    await payload.updateGlobal({ slug: modelo.slug, data, overrideAccess: true, context: contexto() })
     console.log(`Global criada: ${modelo.slug}`)
   }
 
@@ -88,11 +92,39 @@ const main = async (): Promise<void> => {
       collection: 'usuarios',
       data: { email: credenciais.email, password: credenciais.senha, papel: 'administrador', ativo: true },
       overrideAccess: true,
-      context: contexto,
+      context: contexto(),
     })
     console.log('Administrador inicial criado.')
   } else {
     console.log('Usuário já existente; conta não alterada.')
+  }
+
+  // O Payload grava a linha de `midia` mesmo quando o upload não acontece, então o seed só
+  // termina com sucesso se cada arquivo existir de fato. O parâmetro na URL evita o cache de 404
+  // do CDN, e as tentativas cobrem a propagação do Blob logo após o envio.
+  if (!uploadLocalDev) {
+    const ausentes: string[] = []
+    for (let pagina = 1; ; pagina++) {
+      const lote = await payload.find({ collection: 'midia', page: pagina, limit: 100, depth: 0, overrideAccess: true })
+      for (const doc of lote.docs) {
+        if (!doc.url || !URL.canParse(doc.url)) continue
+        let existe = false
+        for (let tentativa = 1; tentativa <= 5 && !existe; tentativa++) {
+          if (tentativa > 1) await esperar(2000)
+          const alvo = new URL(doc.url)
+          alvo.searchParams.set('verificacao', `${Date.now()}-${tentativa}`)
+          existe = (await fetch(alvo, { method: 'HEAD' })).ok
+        }
+        if (!existe) ausentes.push(doc.filename ?? String(doc.id))
+      }
+      if (!lote.hasNextPage) break
+    }
+    if (ausentes.length > 0) {
+      throw new Error(
+        `${ausentes.length} arquivo(s) de mídia sem arquivo no Blob: ${ausentes.join(', ')}. Corrija antes de publicar.`,
+      )
+    }
+    console.log('Todos os arquivos de mídia existem no Blob.')
   }
 
   await payload.destroy()
