@@ -1,6 +1,7 @@
 import type { Field, GlobalSlug } from 'payload'
 import {
   booleano,
+  comDica,
   data,
   grupo,
   imagem,
@@ -11,15 +12,21 @@ import {
   markdown,
   numero,
   paginaInstitucional,
+  secao,
   selecao,
   texto,
 } from './campos'
+
+export const gruposPainel = ['Atualize sempre', 'Página inicial', 'Outras páginas', 'Configurações avançadas'] as const
+export type GrupoPainel = (typeof gruposPainel)[number]
 
 export interface ModeloConteudo {
   chave: string
   slug: GlobalSlug
   arquivo: string
   rotulo: string
+  grupo: GrupoPainel
+  descricao: string
   fields: Field[]
 }
 
@@ -31,6 +38,9 @@ export const modelos: ModeloConteudo[] = [
     slug: 'configuracao-site',
     arquivo: 'cms/seed/site.json',
     rotulo: 'Site e contato',
+    grupo: 'Configurações avançadas',
+    descricao:
+      'Nome, e-mail, Instagram e endereço usados no site todo e na busca do Google. Mude só se esses dados mudarem.',
     fields: [
       texto('url', 'URL do site'),
       texto('nome', 'Nome'),
@@ -63,6 +73,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'configuracao-navegacao',
     arquivo: 'cms/seed/navegacao.json',
     rotulo: 'Menu de navegação',
+    grupo: 'Configurações avançadas',
+    descricao: 'Links do menu no topo do site. Um destino errado quebra a navegação.',
     fields: [
       lista('links', 'Links', 'Link', navegacaoLink()),
       grupo('cta', 'Botão de destaque', navegacaoLink()),
@@ -73,6 +85,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'configuracao-rodape',
     arquivo: 'cms/seed/rodape.json',
     rotulo: 'Rodapé',
+    grupo: 'Configurações avançadas',
+    descricao: 'Textos e links do rodapé, no fim de todas as páginas.',
     fields: [
       texto('tagline', 'Tagline'),
       texto('contatoTitulo', 'Título do contato'),
@@ -90,6 +104,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'configuracao-integracoes',
     arquivo: 'cms/seed/integracoes.json',
     rotulo: 'Integrações Google',
+    grupo: 'Configurações avançadas',
+    descricao: 'Códigos do Google Agenda e das pastas do Drive. Eventos e fotos são editados no próprio Google.',
     fields: [
       texto('googleCalendarId', 'ID do Google Agenda'),
       texto('calendarioAssinarUrl', 'Link para assinar a agenda'),
@@ -102,6 +118,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'configuracao-llms',
     arquivo: 'cms/seed/llms.json',
     rotulo: 'Instruções para agentes (llms.txt)',
+    grupo: 'Configurações avançadas',
+    descricao: 'Texto lido por assistentes de IA (llms.txt). Raramente muda.',
     fields: [longo('texto', 'Texto do llms.txt')],
   },
   {
@@ -109,17 +127,20 @@ export const modelos: ModeloConteudo[] = [
     slug: 'oportunidades-dados',
     arquivo: 'cms/seed/oportunidades.json',
     rotulo: 'Oportunidades',
+    grupo: 'Atualize sempre',
+    descricao:
+      'Vagas, bolsas e editais da seção 05. Desmarque "Publicado" para esconder sem apagar. No dia seguinte à data de "Expira em", ela sai do site sozinha. O site mostra no máximo 12.',
     fields: [
       lista('itens', 'Oportunidades', 'Oportunidade', [
-        booleano('publicado', 'Publicado', true),
-        texto('titulo', 'Título'),
-        texto('tag', 'Etiqueta'),
+        comDica(booleano('publicado', 'Publicado', true), 'Desmarque para esconder do site sem apagar.'),
+        comDica(texto('titulo', 'Título'), 'Até 140 caracteres.'),
+        comDica(texto('tag', 'Etiqueta'), 'Palavra curta acima do título, ex.: BOLSA. Vazio vira OPORTUNIDADE.'),
         selecao('cor', 'Cor', ['verde', 'amarelo', 'ciano'], 'verde'),
-        longo('resumo', 'Resumo', false),
-        longo('texto', 'Texto', false),
-        texto('cta', 'Chamada para ação', false),
-        texto('link', 'Link', false),
-        data('expira', 'Expira em'),
+        comDica(longo('resumo', 'Resumo', false), 'Uma ou duas frases no cartão.'),
+        comDica(longo('texto', 'Texto', false), 'Texto completo ao abrir os detalhes. Vazio usa o resumo.'),
+        comDica(texto('cta', 'Chamada para ação', false), 'Texto do botão. Vazio vira "Quero essa oportunidade".'),
+        comDica(texto('link', 'Link', false), 'Começa com https:// ou mailto:. Vazio leva ao Instagram do CADe.'),
+        comDica(data('expira', 'Expira em'), 'No dia seguinte a esta data, sai do site. Vazio: não expira.'),
       ]),
     ],
   },
@@ -128,6 +149,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'inicio-seo',
     arquivo: 'cms/seed/inicio/seo.json',
     rotulo: 'SEO e para agentes',
+    grupo: 'Configurações avançadas',
+    descricao: 'Título e descrição da página inicial no Google e nas redes sociais.',
     fields: [
       grupo('seo', 'SEO', [
         texto('titulo', 'Título da página'),
@@ -141,19 +164,27 @@ export const modelos: ModeloConteudo[] = [
     chave: 'hero',
     slug: 'inicio-hero',
     arquivo: 'cms/seed/inicio/hero.json',
-    rotulo: 'Destaques (hero)',
+    rotulo: 'Destaques do topo',
+    grupo: 'Atualize sempre',
+    descricao: 'Os slides que abrem a página inicial: chamada, título, botão e mascote de cada um.',
     fields: [
       listaComId('slides', 'Slides', 'Slide', [
-        selecao('acento', 'Cor de destaque', ['navy', 'ciano', 'amarelo', 'verde']),
+        comDica(selecao('acento', 'Cor de destaque', ['navy', 'ciano', 'amarelo', 'verde']), 'Cor do detalhe do slide.'),
         texto('eyebrow', 'Chamada'),
         texto('titulo', 'Título'),
         texto('subtitulo', 'Subtítulo'),
         texto('ctaRotulo', 'Texto do botão'),
-        texto('ctaHref', 'Destino do botão'),
+        comDica(texto('ctaHref', 'Destino do botão'), 'Para onde o botão leva: /sobre, #area-dicas ou https://…'),
         imagem('mascote', 'Mascote'),
         texto('mascoteAlt', 'Texto alternativo da mascote', false),
-        numero('mascoteLargura', 'Largura da mascote (px)'),
-        numero('mascoteAltura', 'Altura da mascote (px)'),
+        comDica(
+          numero('mascoteLargura', 'Largura da mascote (px)'),
+          'Medida da imagem em pixels; mantenha a proporção da mascote.',
+        ),
+        comDica(
+          numero('mascoteAltura', 'Altura da mascote (px)'),
+          'Medida da imagem em pixels; mantenha a proporção da mascote.',
+        ),
       ]),
     ],
   },
@@ -162,6 +193,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'inicio-agenda',
     arquivo: 'cms/seed/inicio/agenda.json',
     rotulo: 'Agenda',
+    grupo: 'Página inicial',
+    descricao: 'Títulos e mensagens da seção 01. Os eventos vêm do Google Agenda, não deste painel.',
     fields: [
       texto('eyebrow', 'Chamada'),
       texto('titulo', 'Título'),
@@ -189,16 +222,21 @@ export const modelos: ModeloConteudo[] = [
     chave: 'quemSomos',
     slug: 'inicio-quem-somos',
     arquivo: 'cms/seed/inicio/quem-somos.json',
-    rotulo: 'Quem somos',
+    rotulo: 'Gestão e quem somos',
+    grupo: 'Atualize sempre',
+    descricao:
+      'Texto da seção 02 e os membros da gestão. Para trocar uma foto, clique na foto do membro e envie outra.',
     fields: [
-      texto('eyebrow', 'Chamada'),
-      texto('titulo', 'Título'),
-      longo('texto', 'Texto'),
-      texto('gestaoTitulo', 'Título da gestão'),
+      secao('Título e texto da seção', [
+        texto('eyebrow', 'Chamada'),
+        texto('titulo', 'Título'),
+        longo('texto', 'Texto'),
+        texto('gestaoTitulo', 'Título da gestão'),
+      ]),
       lista('membros', 'Membros da gestão', 'Membro', [
         texto('nome', 'Nome'),
         imagem('foto', 'Foto'),
-        texto('enquadramento', 'Cargo ou enquadramento'),
+        comDica(texto('enquadramento', 'Cargo ou enquadramento'), 'Ex.: Presidência, Comunicação.'),
       ]),
     ],
   },
@@ -207,6 +245,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'inicio-historico',
     arquivo: 'cms/seed/inicio/historico.json',
     rotulo: 'Histórico',
+    grupo: 'Página inicial',
+    descricao: 'Títulos e mensagens da seção 03 (histórico).',
     fields: [
       texto('eyebrow', 'Chamada'),
       texto('titulo', 'Título'),
@@ -226,6 +266,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'inicio-lojinha',
     arquivo: 'cms/seed/inicio/lojinha.json',
     rotulo: 'Lojinha',
+    grupo: 'Página inicial',
+    descricao: 'Produtos e textos da lojinha, na página inicial.',
     fields: [
       texto('eyebrow', 'Chamada'),
       texto('titulo', 'Título'),
@@ -253,6 +295,9 @@ export const modelos: ModeloConteudo[] = [
     slug: 'inicio-guia',
     arquivo: 'cms/seed/inicio/guia.json',
     rotulo: 'Guia do calouro',
+    grupo: 'Página inicial',
+    descricao:
+      'Seção 04, guia do calouro: foto, cartões e textos da lista de materiais. Os arquivos ficam na pasta do Google Drive.',
     fields: [
       texto('eyebrow', 'Chamada'),
       texto('titulo', 'Título'),
@@ -278,6 +323,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'inicio-oportunidades',
     arquivo: 'cms/seed/inicio/oportunidades.json',
     rotulo: 'Oportunidades — textos da seção',
+    grupo: 'Página inicial',
+    descricao: 'Título, introdução e botão da seção 05. As oportunidades em si ficam em "Oportunidades".',
     fields: [
       texto('eyebrow', 'Chamada'),
       texto('titulo', 'Título'),
@@ -293,6 +340,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'inicio-faq',
     arquivo: 'cms/seed/inicio/faq.json',
     rotulo: 'Perguntas frequentes',
+    grupo: 'Página inicial',
+    descricao: 'Perguntas e respostas da seção 06.',
     fields: [
       texto('eyebrow', 'Chamada'),
       texto('titulo', 'Título'),
@@ -309,13 +358,14 @@ export const modelos: ModeloConteudo[] = [
     slug: 'inicio-atalhos',
     arquivo: 'cms/seed/inicio/atalhos.json',
     rotulo: 'Atalhos',
+    grupo: 'Atualize sempre',
+    descricao: 'Links rápidos da seção 07. Marque "Abrir em nova aba" para sites de fora do CADe.',
     fields: [
-      texto('eyebrow', 'Chamada'),
-      texto('titulo', 'Título'),
+      secao('Título da seção', [texto('eyebrow', 'Chamada'), texto('titulo', 'Título')]),
       listaComId('itens', 'Atalhos', 'Atalho', [
         texto('titulo', 'Título'),
         texto('subtitulo', 'Subtítulo'),
-        texto('href', 'Destino'),
+        comDica(texto('href', 'Destino'), 'Para onde o atalho leva: /sobre, #area-dicas ou https://…'),
         booleano('novaAba', 'Abrir em nova aba', false),
       ]),
     ],
@@ -325,6 +375,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'inicio-formularios',
     arquivo: 'cms/seed/inicio/formularios.json',
     rotulo: 'Formulários',
+    grupo: 'Página inicial',
+    descricao: 'Rótulos, dicas e mensagens dos formulários da seção 08.',
     fields: [
       texto('eyebrow', 'Chamada'),
       texto('titulo', 'Título'),
@@ -377,6 +429,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'pagina-sobre',
     arquivo: 'cms/seed/paginas/sobre.json',
     rotulo: 'Sobre',
+    grupo: 'Outras páginas',
+    descricao: 'Texto da página /sobre.',
     fields: paginaInstitucional(),
   },
   {
@@ -384,6 +438,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'pagina-contato',
     arquivo: 'cms/seed/paginas/contato.json',
     rotulo: 'Contato',
+    grupo: 'Outras páginas',
+    descricao: 'Texto da página /contato.',
     fields: paginaInstitucional(),
   },
   {
@@ -391,6 +447,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'pagina-privacidade',
     arquivo: 'cms/seed/paginas/privacidade.json',
     rotulo: 'Privacidade',
+    grupo: 'Outras páginas',
+    descricao: 'Texto da página /privacidade.',
     fields: paginaInstitucional(),
   },
   {
@@ -398,6 +456,8 @@ export const modelos: ModeloConteudo[] = [
     slug: 'pagina-galeria',
     arquivo: 'cms/seed/paginas/galeria.json',
     rotulo: 'Galeria',
+    grupo: 'Outras páginas',
+    descricao: 'Textos da página /galeria. As fotos vêm da pasta do Google Drive, não deste painel.',
     fields: [
       grupo('seo', 'SEO', [
         texto('titulo', 'Título da página'),

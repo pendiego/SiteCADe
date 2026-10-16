@@ -67,8 +67,8 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    usuarios: Usuario;
     midia: Midia;
+    usuarios: Usuario;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -76,8 +76,8 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    usuarios: UsuariosSelect<false> | UsuariosSelect<true>;
     midia: MidiaSelect<false> | MidiaSelect<true>;
+    usuarios: UsuariosSelect<false> | UsuariosSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -88,50 +88,50 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
-    'configuracao-site': ConfiguracaoSite;
-    'configuracao-navegacao': ConfiguracaoNavegacao;
-    'configuracao-rodape': ConfiguracaoRodape;
-    'configuracao-integracoes': ConfiguracaoIntegracoe;
-    'configuracao-llms': ConfiguracaoLlm;
     'oportunidades-dados': OportunidadesDado;
-    'inicio-seo': InicioSeo;
     'inicio-hero': InicioHero;
-    'inicio-agenda': InicioAgendum;
     'inicio-quem-somos': InicioQuemSomo;
+    'inicio-atalhos': InicioAtalho;
+    'inicio-agenda': InicioAgendum;
     'inicio-historico': InicioHistorico;
     'inicio-lojinha': InicioLojinha;
     'inicio-guia': InicioGuia;
     'inicio-oportunidades': InicioOportunidade;
     'inicio-faq': InicioFaq;
-    'inicio-atalhos': InicioAtalho;
     'inicio-formularios': InicioFormulario;
     'pagina-sobre': PaginaSobre;
     'pagina-contato': PaginaContato;
     'pagina-privacidade': PaginaPrivacidade;
     'pagina-galeria': PaginaGaleria;
+    'configuracao-site': ConfiguracaoSite;
+    'configuracao-navegacao': ConfiguracaoNavegacao;
+    'configuracao-rodape': ConfiguracaoRodape;
+    'configuracao-integracoes': ConfiguracaoIntegracoe;
+    'configuracao-llms': ConfiguracaoLlm;
+    'inicio-seo': InicioSeo;
   };
   globalsSelect: {
-    'configuracao-site': ConfiguracaoSiteSelect<false> | ConfiguracaoSiteSelect<true>;
-    'configuracao-navegacao': ConfiguracaoNavegacaoSelect<false> | ConfiguracaoNavegacaoSelect<true>;
-    'configuracao-rodape': ConfiguracaoRodapeSelect<false> | ConfiguracaoRodapeSelect<true>;
-    'configuracao-integracoes': ConfiguracaoIntegracoesSelect<false> | ConfiguracaoIntegracoesSelect<true>;
-    'configuracao-llms': ConfiguracaoLlmsSelect<false> | ConfiguracaoLlmsSelect<true>;
     'oportunidades-dados': OportunidadesDadosSelect<false> | OportunidadesDadosSelect<true>;
-    'inicio-seo': InicioSeoSelect<false> | InicioSeoSelect<true>;
     'inicio-hero': InicioHeroSelect<false> | InicioHeroSelect<true>;
-    'inicio-agenda': InicioAgendaSelect<false> | InicioAgendaSelect<true>;
     'inicio-quem-somos': InicioQuemSomosSelect<false> | InicioQuemSomosSelect<true>;
+    'inicio-atalhos': InicioAtalhosSelect<false> | InicioAtalhosSelect<true>;
+    'inicio-agenda': InicioAgendaSelect<false> | InicioAgendaSelect<true>;
     'inicio-historico': InicioHistoricoSelect<false> | InicioHistoricoSelect<true>;
     'inicio-lojinha': InicioLojinhaSelect<false> | InicioLojinhaSelect<true>;
     'inicio-guia': InicioGuiaSelect<false> | InicioGuiaSelect<true>;
     'inicio-oportunidades': InicioOportunidadesSelect<false> | InicioOportunidadesSelect<true>;
     'inicio-faq': InicioFaqSelect<false> | InicioFaqSelect<true>;
-    'inicio-atalhos': InicioAtalhosSelect<false> | InicioAtalhosSelect<true>;
     'inicio-formularios': InicioFormulariosSelect<false> | InicioFormulariosSelect<true>;
     'pagina-sobre': PaginaSobreSelect<false> | PaginaSobreSelect<true>;
     'pagina-contato': PaginaContatoSelect<false> | PaginaContatoSelect<true>;
     'pagina-privacidade': PaginaPrivacidadeSelect<false> | PaginaPrivacidadeSelect<true>;
     'pagina-galeria': PaginaGaleriaSelect<false> | PaginaGaleriaSelect<true>;
+    'configuracao-site': ConfiguracaoSiteSelect<false> | ConfiguracaoSiteSelect<true>;
+    'configuracao-navegacao': ConfiguracaoNavegacaoSelect<false> | ConfiguracaoNavegacaoSelect<true>;
+    'configuracao-rodape': ConfiguracaoRodapeSelect<false> | ConfiguracaoRodapeSelect<true>;
+    'configuracao-integracoes': ConfiguracaoIntegracoesSelect<false> | ConfiguracaoIntegracoesSelect<true>;
+    'configuracao-llms': ConfiguracaoLlmsSelect<false> | ConfiguracaoLlmsSelect<true>;
+    'inicio-seo': InicioSeoSelect<false> | InicioSeoSelect<true>;
   };
   locale: null;
   widgets: {
@@ -159,6 +159,39 @@ export interface UsuarioAuthOperations {
   unlock: {
     email: string;
     password: string;
+  };
+}
+/**
+ * Fotos usadas no site. PNG, JPEG ou WebP até 4 MiB, nome em minúsculas com hífen (ex.: foto-gestao-2026.png). Viram WebP sozinhas.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "midia".
+ */
+export interface Midia {
+  id: number;
+  alt: string;
+  prefix?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
   };
 }
 /**
@@ -192,37 +225,6 @@ export interface Usuario {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "midia".
- */
-export interface Midia {
-  id: number;
-  alt: string;
-  prefix?: string | null;
-  _objectKey?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -246,12 +248,12 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'usuarios';
-        value: number | Usuario;
-      } | null)
-    | ({
         relationTo: 'midia';
         value: number | Midia;
+      } | null)
+    | ({
+        relationTo: 'usuarios';
+        value: number | Usuario;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -297,32 +299,6 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "usuarios_select".
- */
-export interface UsuariosSelect<T extends boolean = true> {
-  nome?: T;
-  papel?: T;
-  ativo?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  resetPasswordRequestedAt?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "midia_select".
  */
 export interface MidiaSelect<T extends boolean = true> {
@@ -353,6 +329,32 @@ export interface MidiaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "usuarios_select".
+ */
+export interface UsuariosSelect<T extends boolean = true> {
+  nome?: T;
+  papel?: T;
+  ativo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
       };
 }
 /**
@@ -396,123 +398,46 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "configuracao-site".
- */
-export interface ConfiguracaoSite {
-  id: number;
-  url: string;
-  nome: string;
-  nomeCompleto: string;
-  nomesAlternativos: {
-    valor: string;
-    id?: string | null;
-  }[];
-  descricao: string;
-  descricaoOrganizacao: string;
-  email: string;
-  instagramUrl: string;
-  instagramUsuario: string;
-  githubUrl: string;
-  endereco: {
-    rua: string;
-    cidade: string;
-    uf: string;
-    pais: string;
-    regiao: string;
-    texto: string;
-  };
-  universidade: {
-    nome: string;
-    sigla: string;
-    url: string;
-  };
-  ogImagem: number | Midia;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "configuracao-navegacao".
- */
-export interface ConfiguracaoNavegacao {
-  id: number;
-  links: {
-    rotulo: string;
-    href: string;
-    id?: string | null;
-  }[];
-  cta: {
-    rotulo: string;
-    href: string;
-  };
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "configuracao-rodape".
- */
-export interface ConfiguracaoRodape {
-  id: number;
-  tagline: string;
-  contatoTitulo: string;
-  colunas: {
-    titulo: string;
-    links: {
-      rotulo: string;
-      href: string;
-      id?: string | null;
-    }[];
-    id?: string | null;
-  }[];
-  copyright: string;
-  /**
-   * Markdown (links, listas e negrito).
-   */
-  notaPrivacidade: string;
-  githubRotulo: string;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "configuracao-integracoes".
- */
-export interface ConfiguracaoIntegracoe {
-  id: number;
-  googleCalendarId: string;
-  calendarioAssinarUrl: string;
-  drivePastaGaleria: string;
-  drivePastaMateriais: string;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "configuracao-llms".
- */
-export interface ConfiguracaoLlm {
-  id: number;
-  texto: string;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
+ * Vagas, bolsas e editais da seção 05. Desmarque "Publicado" para esconder sem apagar. No dia seguinte à data de "Expira em", ela sai do site sozinha. O site mostra no máximo 12.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "oportunidades-dados".
  */
 export interface OportunidadesDado {
   id: number;
   itens: {
+    /**
+     * Desmarque para esconder do site sem apagar.
+     */
     publicado: boolean;
+    /**
+     * Até 140 caracteres.
+     */
     titulo: string;
+    /**
+     * Palavra curta acima do título, ex.: BOLSA. Vazio vira OPORTUNIDADE.
+     */
     tag: string;
     cor: 'verde' | 'amarelo' | 'ciano';
+    /**
+     * Uma ou duas frases no cartão.
+     */
     resumo?: string | null;
+    /**
+     * Texto completo ao abrir os detalhes. Vazio usa o resumo.
+     */
     texto?: string | null;
+    /**
+     * Texto do botão. Vazio vira "Quero essa oportunidade".
+     */
     cta?: string | null;
+    /**
+     * Começa com https:// ou mailto:. Vazio leva ao Instagram do CADe.
+     */
     link?: string | null;
+    /**
+     * No dia seguinte a esta data, sai do site. Vazio: não expira.
+     */
     expira?: string | null;
     id?: string | null;
   }[];
@@ -520,27 +445,8 @@ export interface OportunidadesDado {
   createdAt?: string | null;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inicio-seo".
- */
-export interface InicioSeo {
-  id: number;
-  seo: {
-    titulo: string;
-    tituloSocial: string;
-    descricao: string;
-  };
-  agentes: {
-    titulo: string;
-    /**
-     * Markdown (links, listas e negrito).
-     */
-    resumo?: string | null;
-  };
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
+ * Os slides que abrem a página inicial: chamada, título, botão e mascote de cada um.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inicio-hero".
  */
@@ -548,25 +454,90 @@ export interface InicioHero {
   id: number;
   slides: {
     /**
-     * Identificador técnico único (data-od-id). Não altere em itens existentes.
+     * Cor do detalhe do slide.
      */
-    odId: string;
     acento: 'navy' | 'ciano' | 'amarelo' | 'verde';
     eyebrow: string;
     titulo: string;
     subtitulo: string;
     ctaRotulo: string;
+    /**
+     * Para onde o botão leva: /sobre, #area-dicas ou https://…
+     */
     ctaHref: string;
     mascote: number | Midia;
     mascoteAlt?: string | null;
+    /**
+     * Medida da imagem em pixels; mantenha a proporção da mascote.
+     */
     mascoteLargura: number;
+    /**
+     * Medida da imagem em pixels; mantenha a proporção da mascote.
+     */
     mascoteAltura: number;
+    /**
+     * Preenchido automaticamente e usado pelo site. Não precisa mexer.
+     */
+    odId: string;
     id?: string | null;
   }[];
   updatedAt?: string | null;
   createdAt?: string | null;
 }
 /**
+ * Texto da seção 02 e os membros da gestão. Para trocar uma foto, clique na foto do membro e envie outra.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inicio-quem-somos".
+ */
+export interface InicioQuemSomo {
+  id: number;
+  eyebrow: string;
+  titulo: string;
+  texto: string;
+  gestaoTitulo: string;
+  membros: {
+    nome: string;
+    foto: number | Midia;
+    /**
+     * Ex.: Presidência, Comunicação.
+     */
+    enquadramento: string;
+    id?: string | null;
+  }[];
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Links rápidos da seção 07. Marque "Abrir em nova aba" para sites de fora do CADe.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inicio-atalhos".
+ */
+export interface InicioAtalho {
+  id: number;
+  eyebrow: string;
+  titulo: string;
+  itens: {
+    titulo: string;
+    subtitulo: string;
+    /**
+     * Para onde o atalho leva: /sobre, #area-dicas ou https://…
+     */
+    href: string;
+    novaAba: boolean;
+    /**
+     * Preenchido automaticamente e usado pelo site. Não precisa mexer.
+     */
+    odId: string;
+    id?: string | null;
+  }[];
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Títulos e mensagens da seção 01. Os eventos vêm do Google Agenda, não deste painel.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inicio-agenda".
  */
@@ -596,25 +567,8 @@ export interface InicioAgendum {
   createdAt?: string | null;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inicio-quem-somos".
- */
-export interface InicioQuemSomo {
-  id: number;
-  eyebrow: string;
-  titulo: string;
-  texto: string;
-  gestaoTitulo: string;
-  membros: {
-    nome: string;
-    foto: number | Midia;
-    enquadramento: string;
-    id?: string | null;
-  }[];
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
+ * Títulos e mensagens da seção 03 (histórico).
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inicio-historico".
  */
@@ -635,6 +589,8 @@ export interface InicioHistorico {
   createdAt?: string | null;
 }
 /**
+ * Produtos e textos da lojinha, na página inicial.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inicio-lojinha".
  */
@@ -647,15 +603,15 @@ export interface InicioLojinha {
   badgeHref: string;
   hoverRotulo: string;
   produtos: {
-    /**
-     * Identificador técnico único (data-od-id). Não altere em itens existentes.
-     */
-    odId: string;
     titulo: string;
     subtitulo: string;
     imagem: number | Midia;
     alt: string;
     href: string;
+    /**
+     * Preenchido automaticamente e usado pelo site. Não precisa mexer.
+     */
+    odId: string;
     id?: string | null;
   }[];
   cta: {
@@ -668,6 +624,8 @@ export interface InicioLojinha {
   createdAt?: string | null;
 }
 /**
+ * Seção 04, guia do calouro: foto, cartões e textos da lista de materiais. Os arquivos ficam na pasta do Google Drive.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inicio-guia".
  */
@@ -679,14 +637,14 @@ export interface InicioGuia {
   foto: number | Midia;
   fotoLegenda: string;
   cards: {
-    /**
-     * Identificador técnico único (data-od-id). Não altere em itens existentes.
-     */
-    odId: string;
     tipo: 'link' | 'materiais';
     titulo: string;
     texto: string;
     href?: string | null;
+    /**
+     * Preenchido automaticamente e usado pelo site. Não precisa mexer.
+     */
+    odId: string;
     id?: string | null;
   }[];
   materiais: {
@@ -699,6 +657,8 @@ export interface InicioGuia {
   createdAt?: string | null;
 }
 /**
+ * Título, introdução e botão da seção 05. As oportunidades em si ficam em "Oportunidades".
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inicio-oportunidades".
  */
@@ -715,6 +675,8 @@ export interface InicioOportunidade {
   createdAt?: string | null;
 }
 /**
+ * Perguntas e respostas da seção 06.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inicio-faq".
  */
@@ -724,44 +686,24 @@ export interface InicioFaq {
   titulo: string;
   texto: string;
   itens: {
-    /**
-     * Identificador técnico único (data-od-id). Não altere em itens existentes.
-     */
-    odId: string;
     pergunta: string;
     /**
      * Markdown (links, listas e negrito).
      */
     resposta: string;
     aberto: boolean;
-    id?: string | null;
-  }[];
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inicio-atalhos".
- */
-export interface InicioAtalho {
-  id: number;
-  eyebrow: string;
-  titulo: string;
-  itens: {
     /**
-     * Identificador técnico único (data-od-id). Não altere em itens existentes.
+     * Preenchido automaticamente e usado pelo site. Não precisa mexer.
      */
     odId: string;
-    titulo: string;
-    subtitulo: string;
-    href: string;
-    novaAba: boolean;
     id?: string | null;
   }[];
   updatedAt?: string | null;
   createdAt?: string | null;
 }
 /**
+ * Rótulos, dicas e mensagens dos formulários da seção 08.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inicio-formularios".
  */
@@ -833,6 +775,8 @@ export interface InicioFormulario {
   createdAt?: string | null;
 }
 /**
+ * Texto da página /sobre.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pagina-sobre".
  */
@@ -870,6 +814,8 @@ export interface PaginaSobre {
   createdAt?: string | null;
 }
 /**
+ * Texto da página /contato.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pagina-contato".
  */
@@ -907,6 +853,8 @@ export interface PaginaContato {
   createdAt?: string | null;
 }
 /**
+ * Texto da página /privacidade.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pagina-privacidade".
  */
@@ -944,6 +892,8 @@ export interface PaginaPrivacidade {
   createdAt?: string | null;
 }
 /**
+ * Textos da página /galeria. As fotos vêm da pasta do Google Drive, não deste painel.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pagina-galeria".
  */
@@ -983,118 +933,140 @@ export interface PaginaGaleria {
   createdAt?: string | null;
 }
 /**
+ * Nome, e-mail, Instagram e endereço usados no site todo e na busca do Google. Mude só se esses dados mudarem.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "configuracao-site_select".
+ * via the `definition` "configuracao-site".
  */
-export interface ConfiguracaoSiteSelect<T extends boolean = true> {
-  url?: T;
-  nome?: T;
-  nomeCompleto?: T;
-  nomesAlternativos?:
-    | T
-    | {
-        valor?: T;
-        id?: T;
-      };
-  descricao?: T;
-  descricaoOrganizacao?: T;
-  email?: T;
-  instagramUrl?: T;
-  instagramUsuario?: T;
-  githubUrl?: T;
-  endereco?:
-    | T
-    | {
-        rua?: T;
-        cidade?: T;
-        uf?: T;
-        pais?: T;
-        regiao?: T;
-        texto?: T;
-      };
-  universidade?:
-    | T
-    | {
-        nome?: T;
-        sigla?: T;
-        url?: T;
-      };
-  ogImagem?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
+export interface ConfiguracaoSite {
+  id: number;
+  url: string;
+  nome: string;
+  nomeCompleto: string;
+  nomesAlternativos: {
+    valor: string;
+    id?: string | null;
+  }[];
+  descricao: string;
+  descricaoOrganizacao: string;
+  email: string;
+  instagramUrl: string;
+  instagramUsuario: string;
+  githubUrl: string;
+  endereco: {
+    rua: string;
+    cidade: string;
+    uf: string;
+    pais: string;
+    regiao: string;
+    texto: string;
+  };
+  universidade: {
+    nome: string;
+    sigla: string;
+    url: string;
+  };
+  ogImagem: number | Midia;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
+ * Links do menu no topo do site. Um destino errado quebra a navegação.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "configuracao-navegacao_select".
+ * via the `definition` "configuracao-navegacao".
  */
-export interface ConfiguracaoNavegacaoSelect<T extends boolean = true> {
-  links?:
-    | T
-    | {
-        rotulo?: T;
-        href?: T;
-        id?: T;
-      };
-  cta?:
-    | T
-    | {
-        rotulo?: T;
-        href?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
+export interface ConfiguracaoNavegacao {
+  id: number;
+  links: {
+    rotulo: string;
+    href: string;
+    id?: string | null;
+  }[];
+  cta: {
+    rotulo: string;
+    href: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
+ * Textos e links do rodapé, no fim de todas as páginas.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "configuracao-rodape_select".
+ * via the `definition` "configuracao-rodape".
  */
-export interface ConfiguracaoRodapeSelect<T extends boolean = true> {
-  tagline?: T;
-  contatoTitulo?: T;
-  colunas?:
-    | T
-    | {
-        titulo?: T;
-        links?:
-          | T
-          | {
-              rotulo?: T;
-              href?: T;
-              id?: T;
-            };
-        id?: T;
-      };
-  copyright?: T;
-  notaPrivacidade?: T;
-  githubRotulo?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
+export interface ConfiguracaoRodape {
+  id: number;
+  tagline: string;
+  contatoTitulo: string;
+  colunas: {
+    titulo: string;
+    links: {
+      rotulo: string;
+      href: string;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  copyright: string;
+  /**
+   * Markdown (links, listas e negrito).
+   */
+  notaPrivacidade: string;
+  githubRotulo: string;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
+ * Códigos do Google Agenda e das pastas do Drive. Eventos e fotos são editados no próprio Google.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "configuracao-integracoes_select".
+ * via the `definition` "configuracao-integracoes".
  */
-export interface ConfiguracaoIntegracoesSelect<T extends boolean = true> {
-  googleCalendarId?: T;
-  calendarioAssinarUrl?: T;
-  drivePastaGaleria?: T;
-  drivePastaMateriais?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
+export interface ConfiguracaoIntegracoe {
+  id: number;
+  googleCalendarId: string;
+  calendarioAssinarUrl: string;
+  drivePastaGaleria: string;
+  drivePastaMateriais: string;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
+ * Texto lido por assistentes de IA (llms.txt). Raramente muda.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "configuracao-llms_select".
+ * via the `definition` "configuracao-llms".
  */
-export interface ConfiguracaoLlmsSelect<T extends boolean = true> {
-  texto?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
+export interface ConfiguracaoLlm {
+  id: number;
+  texto: string;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Título e descrição da página inicial no Google e nas redes sociais.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inicio-seo".
+ */
+export interface InicioSeo {
+  id: number;
+  seo: {
+    titulo: string;
+    tituloSocial: string;
+    descricao: string;
+  };
+  agentes: {
+    titulo: string;
+    /**
+     * Markdown (links, listas e negrito).
+     */
+    resumo?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1121,35 +1093,12 @@ export interface OportunidadesDadosSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inicio-seo_select".
- */
-export interface InicioSeoSelect<T extends boolean = true> {
-  seo?:
-    | T
-    | {
-        titulo?: T;
-        tituloSocial?: T;
-        descricao?: T;
-      };
-  agentes?:
-    | T
-    | {
-        titulo?: T;
-        resumo?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inicio-hero_select".
  */
 export interface InicioHeroSelect<T extends boolean = true> {
   slides?:
     | T
     | {
-        odId?: T;
         acento?: T;
         eyebrow?: T;
         titulo?: T;
@@ -1160,6 +1109,49 @@ export interface InicioHeroSelect<T extends boolean = true> {
         mascoteAlt?: T;
         mascoteLargura?: T;
         mascoteAltura?: T;
+        odId?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inicio-quem-somos_select".
+ */
+export interface InicioQuemSomosSelect<T extends boolean = true> {
+  eyebrow?: T;
+  titulo?: T;
+  texto?: T;
+  gestaoTitulo?: T;
+  membros?:
+    | T
+    | {
+        nome?: T;
+        foto?: T;
+        enquadramento?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inicio-atalhos_select".
+ */
+export interface InicioAtalhosSelect<T extends boolean = true> {
+  eyebrow?: T;
+  titulo?: T;
+  itens?:
+    | T
+    | {
+        titulo?: T;
+        subtitulo?: T;
+        href?: T;
+        novaAba?: T;
+        odId?: T;
         id?: T;
       };
   updatedAt?: T;
@@ -1192,27 +1184,6 @@ export interface InicioAgendaSelect<T extends boolean = true> {
         diaSemEventoDesc?: T;
         indisponivelTitulo?: T;
         indisponivelDesc?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inicio-quem-somos_select".
- */
-export interface InicioQuemSomosSelect<T extends boolean = true> {
-  eyebrow?: T;
-  titulo?: T;
-  texto?: T;
-  gestaoTitulo?: T;
-  membros?:
-    | T
-    | {
-        nome?: T;
-        foto?: T;
-        enquadramento?: T;
-        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1254,12 +1225,12 @@ export interface InicioLojinhaSelect<T extends boolean = true> {
   produtos?:
     | T
     | {
-        odId?: T;
         titulo?: T;
         subtitulo?: T;
         imagem?: T;
         alt?: T;
         href?: T;
+        odId?: T;
         id?: T;
       };
   cta?:
@@ -1287,11 +1258,11 @@ export interface InicioGuiaSelect<T extends boolean = true> {
   cards?:
     | T
     | {
-        odId?: T;
         tipo?: T;
         titulo?: T;
         texto?: T;
         href?: T;
+        odId?: T;
         id?: T;
       };
   materiais?:
@@ -1333,31 +1304,10 @@ export interface InicioFaqSelect<T extends boolean = true> {
   itens?:
     | T
     | {
-        odId?: T;
         pergunta?: T;
         resposta?: T;
         aberto?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inicio-atalhos_select".
- */
-export interface InicioAtalhosSelect<T extends boolean = true> {
-  eyebrow?: T;
-  titulo?: T;
-  itens?:
-    | T
-    | {
         odId?: T;
-        titulo?: T;
-        subtitulo?: T;
-        href?: T;
-        novaAba?: T;
         id?: T;
       };
   updatedAt?: T;
@@ -1585,6 +1535,142 @@ export interface PaginaGaleriaSelect<T extends boolean = true> {
         verMais?: T;
         erroCategoria?: T;
         erroGeral?: T;
+      };
+  agentes?:
+    | T
+    | {
+        titulo?: T;
+        resumo?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "configuracao-site_select".
+ */
+export interface ConfiguracaoSiteSelect<T extends boolean = true> {
+  url?: T;
+  nome?: T;
+  nomeCompleto?: T;
+  nomesAlternativos?:
+    | T
+    | {
+        valor?: T;
+        id?: T;
+      };
+  descricao?: T;
+  descricaoOrganizacao?: T;
+  email?: T;
+  instagramUrl?: T;
+  instagramUsuario?: T;
+  githubUrl?: T;
+  endereco?:
+    | T
+    | {
+        rua?: T;
+        cidade?: T;
+        uf?: T;
+        pais?: T;
+        regiao?: T;
+        texto?: T;
+      };
+  universidade?:
+    | T
+    | {
+        nome?: T;
+        sigla?: T;
+        url?: T;
+      };
+  ogImagem?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "configuracao-navegacao_select".
+ */
+export interface ConfiguracaoNavegacaoSelect<T extends boolean = true> {
+  links?:
+    | T
+    | {
+        rotulo?: T;
+        href?: T;
+        id?: T;
+      };
+  cta?:
+    | T
+    | {
+        rotulo?: T;
+        href?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "configuracao-rodape_select".
+ */
+export interface ConfiguracaoRodapeSelect<T extends boolean = true> {
+  tagline?: T;
+  contatoTitulo?: T;
+  colunas?:
+    | T
+    | {
+        titulo?: T;
+        links?:
+          | T
+          | {
+              rotulo?: T;
+              href?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  copyright?: T;
+  notaPrivacidade?: T;
+  githubRotulo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "configuracao-integracoes_select".
+ */
+export interface ConfiguracaoIntegracoesSelect<T extends boolean = true> {
+  googleCalendarId?: T;
+  calendarioAssinarUrl?: T;
+  drivePastaGaleria?: T;
+  drivePastaMateriais?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "configuracao-llms_select".
+ */
+export interface ConfiguracaoLlmsSelect<T extends boolean = true> {
+  texto?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inicio-seo_select".
+ */
+export interface InicioSeoSelect<T extends boolean = true> {
+  seo?:
+    | T
+    | {
+        titulo?: T;
+        tituloSocial?: T;
+        descricao?: T;
       };
   agentes?:
     | T

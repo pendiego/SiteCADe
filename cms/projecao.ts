@@ -1,5 +1,6 @@
 import type { Field } from 'payload';
 import type { ModeloConteudo } from '@/cms/modelos';
+import { camposDeDados } from '@/cms/campos';
 import { dataChave } from '@/lib/oportunidades';
 
 /** Converte os documentos do CMS para o contrato público, sem metadados do Payload. */
@@ -10,7 +11,7 @@ export function projetarDocumento(documento: unknown, modelo: { slug: string; fi
     }
     const fonte = valor as Record<string, unknown>;
     const resultado: Record<string, unknown> = {};
-    for (const campo of campos) {
+    for (const campo of camposDeDados(campos)) {
       if (!('name' in campo) || !campo.name || ['id', 'createdAt', 'updatedAt', '_status'].includes(campo.name)) continue;
       const nome = campo.name;
       const chave = nome === 'odId' ? 'id' : nome;
@@ -21,7 +22,7 @@ export function projetarDocumento(documento: unknown, modelo: { slug: string; fi
       } else if (campo.type === 'array') {
         if (dado != null && !Array.isArray(dado)) throw new Error(`Lista inválida em ${local}.`);
         const lista = (dado ?? []) as unknown[];
-        const proprios = campo.fields.filter((f) => !('name' in f) || f.name !== 'id');
+        const proprios = camposDeDados(campo.fields).filter((f) => !('name' in f) || f.name !== 'id');
         const primitiva = proprios.length === 1 && 'name' in proprios[0] && proprios[0].name === 'valor';
         resultado[chave] = lista.map((item, i) => {
           const linha = projetar(campo.fields, item, `${local}[${i}]`);

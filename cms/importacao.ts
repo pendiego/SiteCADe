@@ -1,4 +1,5 @@
 import type { Field } from 'payload'
+import { camposDeDados } from './campos'
 
 export type ResolverImagem = (caminho: string) => Promise<number | string>
 
@@ -7,12 +8,12 @@ const ehRegistro = (valor: unknown): valor is Record<string, unknown> =>
 
 // O Payload injeta um campo `id` em todo array ao sanitizar a configuração.
 const ehListaDeValores = (campos: Field[]): boolean => {
-  const proprios = campos.filter((c) => !('name' in c) || c.name !== 'id')
+  const proprios = camposDeDados(campos).filter((c) => !('name' in c) || c.name !== 'id')
   const [unico] = proprios
   return proprios.length === 1 && unico?.type === 'text' && unico.name === 'valor'
 }
 
-const temOdId = (campos: Field[]): boolean => campos.some((c) => 'name' in c && c.name === 'odId')
+const temOdId = (campos: Field[]): boolean => camposDeDados(campos).some((c) => 'name' in c && c.name === 'odId')
 
 const converterCampo = async (
   campo: Field,
@@ -58,7 +59,7 @@ export const converterDados = async (
   resolverImagem: ResolverImagem,
 ): Promise<Record<string, unknown>> => {
   const saida: Record<string, unknown> = {}
-  for (const campo of campos) {
+  for (const campo of camposDeDados(campos)) {
     if (!('name' in campo)) continue
     const convertido = await converterCampo(campo, dados[campo.name], resolverImagem)
     if (convertido !== undefined) saida[campo.name] = convertido

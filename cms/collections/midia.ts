@@ -9,8 +9,13 @@ export const uploadLocalDev = !producao && !temBlob && process.env.CMS_UPLOAD_LO
 
 export const Midia: CollectionConfig = {
   slug: 'midia',
-  labels: { singular: 'Mídia', plural: 'Mídias' },
-  admin: { useAsTitle: 'filename', group: 'Conteúdo' },
+  labels: { singular: 'Imagem', plural: 'Imagens' },
+  admin: {
+    useAsTitle: 'filename',
+    group: 'Atualize sempre',
+    description:
+      'Fotos usadas no site. PNG, JPEG ou WebP até 4 MiB, nome em minúsculas com hífen (ex.: foto-gestao-2026.png). Viram WebP sozinhas.',
+  },
   access: {
     read: () => true,
     create: ({ req }) => podeGerenciarConteudo(req.user),

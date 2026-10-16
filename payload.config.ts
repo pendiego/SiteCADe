@@ -50,6 +50,14 @@ export default buildConfig({
   csrf: origensConfiaveis,
   admin: {
     user: Usuarios.slug,
+    components: {
+      beforeDashboard: ['/cms/admin/PainelInicio#PainelInicio'],
+      graphics: { Logo: '/cms/admin/Marca#Logo', Icon: '/cms/admin/Marca#Icone' },
+    },
+    meta: {
+      titleSuffix: ' · Painel CADe',
+      icons: [{ rel: 'icon', type: 'image/svg+xml', url: '/assets/favicon.svg' }],
+    },
   },
   i18n: {
     supportedLanguages: { pt },
@@ -60,7 +68,7 @@ export default buildConfig({
     admin: '/admin',
   },
   graphQL: { disable: true },
-  collections: [Usuarios, Midia],
+  collections: [Midia, Usuarios],
   globals: globais,
   email: adaptadorEmail,
   sharp,

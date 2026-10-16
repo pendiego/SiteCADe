@@ -89,4 +89,19 @@ describe('projetarDocumento (cms/projecao)', () => {
   it('lista que não é array falha', () => {
     expect(() => projetarDocumento({ ...documento, tags: 'ensino' }, modelo)).toThrow();
   });
+
+  it('campos de layout (collapsible) não escondem os filhos', () => {
+    const layout: Field[] = [
+      { type: 'collapsible', label: 'x', fields: [{ name: 'titulo', type: 'text', required: true }] },
+      {
+        name: 'links',
+        type: 'array',
+        fields: [
+          { type: 'collapsible', label: 'y', fields: [{ name: 'rotulo', type: 'text', required: true }] },
+        ],
+      },
+    ];
+    const projetado = projetarDocumento({ titulo: 'A', links: [{ id: 'l1', rotulo: 'B' }] }, { slug: 't', fields: layout });
+    expect(projetado).toEqual({ titulo: 'A', links: [{ rotulo: 'B' }] });
+  });
 });

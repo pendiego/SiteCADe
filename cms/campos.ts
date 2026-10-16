@@ -1,6 +1,7 @@
 import type {
   ArrayField,
   CheckboxField,
+  CollapsibleField,
   DateField,
   Field,
   GroupField,
@@ -14,8 +15,7 @@ import type {
 
 export const padraoIdentificador = /^[a-z0-9-]+$/
 export const mensagemIdentificador = 'Use só minúsculas, números e hífen'
-export const dicaIdentificador =
-  'Identificador técnico único (data-od-id). Não altere em itens existentes.'
+export const dicaIdentificador = 'Preenchido automaticamente e usado pelo site. Não precisa mexer.'
 
 export const texto = (name: string, label: string, obrigatorio = true): TextField => ({
   name,
@@ -122,12 +122,18 @@ const validarIdentificador: Validate = (valor: unknown) =>
 export const identificador = (): TextField => ({
   name: 'odId',
   type: 'text',
-  label: 'Identificador',
+  label: 'Identificador técnico',
   required: true,
   unique: false,
-  admin: { description: dicaIdentificador },
+  defaultValue: () => `item-${crypto.randomUUID().slice(0, 8)}`,
+  admin: { readOnly: true, description: dicaIdentificador },
   validate: validarIdentificador,
 })
+
+const adminLista = {
+  initCollapsed: true,
+  components: { RowLabel: '/cms/admin/RotuloLinha#RotuloLinha' },
+} as const
 
 export const lista = (name: string, label: string, rotuloItem: string, fields: Field[]): ArrayField => ({
   name,
@@ -135,6 +141,7 @@ export const lista = (name: string, label: string, rotuloItem: string, fields: F
   label,
   required: true,
   labels: { singular: rotuloItem, plural: label },
+  admin: adminLista,
   fields,
 })
 
@@ -144,9 +151,24 @@ export const listaComId = (name: string, label: string, rotuloItem: string, fiel
   label,
   required: true,
   labels: { singular: rotuloItem, plural: label },
+  admin: adminLista,
   validate: validarIdsUnicos,
-  fields: [identificador(), ...fields],
+  fields: [...fields, identificador()],
 })
+
+// Campos de layout (collapsible, row) não guardam dados: os filhos ficam no mesmo nível.
+export const camposDeDados = (campos: readonly Field[]): Field[] =>
+  campos.flatMap((c) => (c.type === 'collapsible' || c.type === 'row' ? camposDeDados(c.fields) : [c]))
+
+export const secao = (rotulo: string, fields: Field[]): CollapsibleField => ({
+  type: 'collapsible',
+  label: rotulo,
+  admin: { initCollapsed: true },
+  fields,
+})
+
+export const comDica = <T extends Field>(campo: T, descricao: string): T =>
+  ({ ...campo, admin: { ...campo.admin, description: descricao } }) as T
 
 export const paginaInstitucional = (): Field[] => [
   grupo('seo', 'SEO', [

@@ -1,4 +1,5 @@
 import '@payloadcms/next/css'
+import './painel.css'
 import type { ServerFunctionClient } from 'payload'
 import { handleServerFunctions, RootLayout } from '@payloadcms/next/layouts'
 import type { ReactNode } from 'react'
