@@ -69,6 +69,14 @@ export const Usuarios: CollectionConfig = {
       required: false,
     },
     {
+      name: 'foto',
+      type: 'upload',
+      relationTo: 'midia',
+      label: 'Foto de perfil',
+      required: false,
+      admin: { description: 'Aparece no canto do painel. Envie uma imagem quadrada, de preferência.' },
+    },
+    {
       name: 'papel',
       type: 'select',
       label: 'Papel',

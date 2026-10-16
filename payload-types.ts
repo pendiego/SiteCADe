@@ -201,6 +201,10 @@ export interface Midia {
 export interface Usuario {
   id: number;
   nome?: string | null;
+  /**
+   * Aparece no canto do painel. Envie uma imagem quadrada, de preferência.
+   */
+  foto?: (number | null) | Midia;
   papel: 'administrador' | 'editor';
   ativo?: boolean | null;
   updatedAt: string;
@@ -337,6 +341,7 @@ export interface MidiaSelect<T extends boolean = true> {
  */
 export interface UsuariosSelect<T extends boolean = true> {
   nome?: T;
+  foto?: T;
   papel?: T;
   ativo?: T;
   updatedAt?: T;

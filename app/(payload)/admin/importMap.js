@@ -1,4 +1,5 @@
 import { RotuloLinha as RotuloLinha_05538cffc890db6c9281356084f904a0 } from '../../../cms/admin/RotuloLinha'
+import { Avatar as Avatar_449cb5a744bf1c534f8d677eb283b67b } from '../../../cms/admin/Avatar'
 import { Icone as Icone_b2cc6e787d8bf4ea074d45fd0a218006 } from '../../../cms/admin/Marca'
 import { Logo as Logo_b2cc6e787d8bf4ea074d45fd0a218006 } from '../../../cms/admin/Marca'
 import { PainelInicio as PainelInicio_34848706c88e913d66575aa139271975 } from '../../../cms/admin/PainelInicio'
@@ -8,6 +9,7 @@ import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e
 /** @type import('payload').ImportMap */
 export const importMap = {
   "/cms/admin/RotuloLinha#RotuloLinha": RotuloLinha_05538cffc890db6c9281356084f904a0,
+  "/cms/admin/Avatar#Avatar": Avatar_449cb5a744bf1c534f8d677eb283b67b,
   "/cms/admin/Marca#Icone": Icone_b2cc6e787d8bf4ea074d45fd0a218006,
   "/cms/admin/Marca#Logo": Logo_b2cc6e787d8bf4ea074d45fd0a218006,
   "/cms/admin/PainelInicio#PainelInicio": PainelInicio_34848706c88e913d66575aa139271975,

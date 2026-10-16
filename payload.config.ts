@@ -50,6 +50,7 @@ export default buildConfig({
   csrf: origensConfiaveis,
   admin: {
     user: Usuarios.slug,
+    avatar: { Component: '/cms/admin/Avatar#Avatar' },
     components: {
       beforeDashboard: ['/cms/admin/PainelInicio#PainelInicio'],
       graphics: { Logo: '/cms/admin/Marca#Logo', Icon: '/cms/admin/Marca#Icone' },
