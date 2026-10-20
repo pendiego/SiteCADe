@@ -1,3 +1,4 @@
+import EquipeGestao from '@/components/EquipeGestao';
 import Nav from '@/components/Nav';
 import Rodape from '@/components/Rodape';
 import { getConteudo } from '@/lib/conteudo';
@@ -8,13 +9,21 @@ interface Props {
 }
 
 export default async function PaginaInstitucional({ slug }: Props) {
-  const { paginas, navegacao, rodape, site } = await getConteudo();
+  const { paginas, navegacao, rodape, site, quemSomos } = await getConteudo();
   const pagina = paginas[slug];
   const fundo = slug === 'contato' ? 'var(--bg-forms)' : 'var(--bg-cade)';
-  const prosa = pagina.secoes.map((secao, i) => {
+  // wrapper com display:contents: o HTML do CMS continua filho direto de .inst-prosa para o CSS
+  const blocos = pagina.secoes.map((secao, i) => {
     const titulo = secao.titulo.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return `<h2 data-od-id="${slug}-secao-${i + 1}">${titulo}</h2>${secaoHtml(secao, site.url)}`;
-  }).join('') + (pagina.nota ? `<p class="inst-nota">${mdInline(pagina.nota, site.url)}</p>` : '');
+    const html = `<h2 data-od-id="${slug}-secao-${i + 1}">${titulo}</h2>${secaoHtml(secao, site.url)}`;
+    return (
+      <div key={i} style={{ display: 'contents' }}>
+        <div style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: html }} />
+        {secao.estilo === 'gestao' && <EquipeGestao membros={quemSomos.membros} />}
+      </div>
+    );
+  });
+  const nota = pagina.nota ? `<p class="inst-nota">${mdInline(pagina.nota, site.url)}</p>` : '';
 
   return (
     <>
@@ -28,7 +37,10 @@ export default async function PaginaInstitucional({ slug }: Props) {
           <p className="lead">{pagina.lead}</p>
         </div>
 
-        <div className="inst-prosa" data-od-id={`${slug}-prosa`} dangerouslySetInnerHTML={{ __html: prosa }} />
+        <div className="inst-prosa" data-od-id={`${slug}-prosa`}>
+          {blocos}
+          {nota && <div style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: nota }} />}
+        </div>
       </section>
     </div>
     </main>

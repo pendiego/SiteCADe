@@ -49,3 +49,71 @@
   padding-left:14px;
   border-left:2px solid var(--rosa);
 }
+
+/* Seção de estilo "lista" (ex.: "O que fazemos"): título à esquerda, descrição à direita, separados por filete */
+.inst-prosa .inst-lista{
+  list-style:none;
+  margin:0 0 18px;
+  padding:0;
+  border-top:1px solid var(--linha);
+}
+.inst-prosa .inst-lista li{
+  margin:0;
+  padding:16px 0;
+  display:grid;
+  grid-template-columns:minmax(0,15em) minmax(0,1fr);
+  gap:4px 24px;
+  border-bottom:1px solid var(--linha);
+}
+.inst-prosa .inst-lista b{font-size:clamp(16px,1.5vw,18px);line-height:1.4}
+.inst-prosa .inst-lista span{font-size:clamp(15px,1.35vw,17px);line-height:1.55}
+@media (max-width:720px){
+  .inst-prosa .inst-lista li{grid-template-columns:minmax(0,1fr)}
+}
+
+/* Equipe da gestão (seção de estilo "gestao" em /sobre): avatares redondos pequenos, sem linhas nem bordas */
+.inst-prosa .equipe h3{margin:clamp(24px,3vw,36px) 0 16px}
+.inst-prosa .equipe h3:first-child{margin-top:20px}
+
+.equipe-coord,
+.equipe-membros{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:grid;
+}
+.equipe-coord{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:20px 32px;
+}
+.equipe-membros{
+  grid-template-columns:repeat(auto-fill,minmax(168px,1fr));
+  gap:14px 24px;
+}
+.inst-prosa .equipe-coord li{
+  margin:0;
+  display:grid;
+  grid-template-columns:64px minmax(0,1fr);
+  grid-template-rows:auto auto;
+  align-content:center;
+  column-gap:16px;row-gap:2px;
+}
+.inst-prosa .equipe-membros li{margin:0;display:flex;align-items:center;gap:12px}
+
+.equipe-coord img{
+  grid-row:1/3;align-self:center;
+  width:64px;height:64px;object-fit:cover;border-radius:50%;background:var(--linha);display:block;
+}
+.inst-prosa .equipe-coord b{align-self:end;font-size:clamp(16px,1.5vw,18px);font-weight:800;line-height:1.25;color:var(--navy)}
+.inst-prosa .equipe-coord span{align-self:start;font-size:clamp(14px,1.25vw,15px);line-height:1.4;color:var(--navy-75)}
+
+.equipe-membros img{
+  flex:none;width:44px;height:44px;object-fit:cover;border-radius:50%;background:var(--linha);display:block;
+}
+.inst-prosa .equipe-membros span{
+  font-size:clamp(15px,1.35vw,16px);font-weight:600;line-height:1.3;color:var(--navy);min-width:0;overflow-wrap:anywhere;
+}
+
+@media (max-width:720px){
+  .equipe-coord{grid-template-columns:minmax(0,1fr)}
+}

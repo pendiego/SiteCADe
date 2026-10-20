@@ -56,8 +56,18 @@ export function mdInline(fonte: string, siteUrl: string = SITE_URL_PADRAO): stri
 }
 
 // Porta de `.inst-canais`: a primeira lista da seção "canais" recebe a classe.
+// Estilo "lista": cada item "**Título** — descrição" vira título + descrição (layout editorial, sem o travessão).
 export function secaoHtml(s: SecaoInstitucional, siteUrl: string = SITE_URL_PADRAO): string {
   const html = md(s.corpo, siteUrl);
-  if (s.estilo !== 'canais') return html;
-  return html.replace('<ul>', '<ul class="inst-canais">');
+  if (s.estilo === 'canais') return html.replace('<ul>', '<ul class="inst-canais">');
+  if (s.estilo === 'lista') {
+    return html
+      .replace('<ul>', '<ul class="inst-lista">')
+      .replace(
+        /<li><b>([\s\S]*?)<\/b> — ([\s\S]*?)<\/li>/g,
+        (_item, titulo: string, descricao: string) =>
+          `<li><b>${titulo}</b><span>${descricao.replace(/^\p{Ll}/u, (letra) => letra.toUpperCase())}</span></li>`,
+      );
+  }
+  return html;
 }

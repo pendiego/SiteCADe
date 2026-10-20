@@ -8,7 +8,7 @@ simplesmente nunca existiu.
 ## Onde procurar
 
 - [Início](${SITE}/) — agenda, quem somos, guia do calouro, oportunidades, FAQ e formulários
-- [Sobre o CADe](${SITE}/sobre) — o que é a organização, como a gestão é eleita, onde ficamos
+- [Sobre o CADe](${SITE}/sobre) — o que é a organização, quem compõe a gestão, onde ficamos
 - [Contato](${SITE}/contato) — e-mail, Instagram, formulários e para onde levar cada assunto
 - [Privacidade](${SITE}/privacidade) — o que fazemos com os dados dos formulários
 - [Galeria](${SITE}/galeria) — fotos de eventos e gestões anteriores

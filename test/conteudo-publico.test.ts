@@ -66,7 +66,35 @@ describe('markdown de páginas (lib/md-paginas)', () => {
   it('mdInicio reflete a gestão vinda do conteúdo, não um número fixo', async () => {
     const membros = base.quemSomos.membros.slice(0, 3);
     estado.conteudo = { ...base, quemSomos: { ...base.quemSomos, membros } };
-    expect(await md.mdInicio(HOJE)).toContain('Gestão atual:** 3 alunos eleitos');
+    expect(await md.mdInicio(HOJE)).toContain('Gestão atual:** 3 alunos');
+  });
+
+  it('mdInstitucional(sobre) lista coordenação com cargo e demais membros, vindos do mesmo conteúdo da home', async () => {
+    const texto = await md.mdInstitucional('sobre');
+    expect(texto).toContain('### Coordenação');
+    expect(texto).toContain('- **Ana Tomasi** — Coordenadora geral');
+    expect(texto).toContain('### Membros');
+    // quem não é coordenação não ganha cargo nem aparece na lista de coordenação
+    expect(texto).not.toContain('- **Ana** —');
+
+    // trocar a lista no painel muda a página: o conteúdo é a única fonte
+    const membros = [
+      { nome: 'Zeca', foto: '/z.webp', enquadramento: '50% 25%', cargo: 'Tesoureiro', coordenacao: true },
+      { nome: 'Bia', foto: '/b.webp', enquadramento: '50% 25%', cargo: '', coordenacao: false },
+    ];
+    estado.conteudo = { ...base, quemSomos: { ...base.quemSomos, membros } };
+    const outro = await md.mdInstitucional('sobre');
+    expect(outro).toContain('- **Zeca** — Tesoureiro');
+    expect(outro).toContain('Bia.');
+    expect(outro).not.toContain('Ana Tomasi');
+  });
+
+  it('mdInstitucional(sobre) sem ninguém marcado como coordenação não inventa o bloco', async () => {
+    const membros = [{ nome: 'Bia', foto: '/b.webp', enquadramento: '50% 25%', coordenacao: false }];
+    estado.conteudo = { ...base, quemSomos: { ...base.quemSomos, membros } };
+    const texto = await md.mdInstitucional('sobre');
+    expect(texto).not.toContain('### Coordenação');
+    expect(texto).toContain('### Membros');
   });
 
   it('mdInicio lista só oportunidades publicadas e vigentes', async () => {

@@ -505,9 +505,17 @@ export interface InicioQuemSomo {
     nome: string;
     foto: number | Midia;
     /**
-     * Ex.: Presidência, Comunicação.
+     * Posição do rosto no recorte da foto, ex.: 50% 25%. Deixe como está se a foto já aparece bem.
      */
     enquadramento: string;
+    /**
+     * Ex.: Coordenadora geral. Deixe vazio para quem é só membro.
+     */
+    cargo?: string | null;
+    /**
+     * Marque para aparecer em "Coordenação" na página Sobre; sem marcar, aparece em "Membros".
+     */
+    coordenacao: boolean;
     id?: string | null;
   }[];
   updatedAt?: string | null;
@@ -797,7 +805,7 @@ export interface PaginaSobre {
   lead: string;
   secoes: {
     titulo: string;
-    estilo: 'texto' | 'canais';
+    estilo: 'texto' | 'canais' | 'gestao' | 'lista';
     /**
      * Markdown (links, listas e negrito).
      */
@@ -836,7 +844,7 @@ export interface PaginaContato {
   lead: string;
   secoes: {
     titulo: string;
-    estilo: 'texto' | 'canais';
+    estilo: 'texto' | 'canais' | 'gestao' | 'lista';
     /**
      * Markdown (links, listas e negrito).
      */
@@ -875,7 +883,7 @@ export interface PaginaPrivacidade {
   lead: string;
   secoes: {
     titulo: string;
-    estilo: 'texto' | 'canais';
+    estilo: 'texto' | 'canais' | 'gestao' | 'lista';
     /**
      * Markdown (links, listas e negrito).
      */
@@ -1136,6 +1144,8 @@ export interface InicioQuemSomosSelect<T extends boolean = true> {
         nome?: T;
         foto?: T;
         enquadramento?: T;
+        cargo?: T;
+        coordenacao?: T;
         id?: T;
       };
   updatedAt?: T;

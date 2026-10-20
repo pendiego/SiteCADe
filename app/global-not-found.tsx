@@ -55,7 +55,7 @@ export default async function GlobalNotFound() {
               <h2 data-od-id="erro-404-onde-procurar">Onde procurar</h2>
               <ul className="inst-canais">
                 <li><span><b><a href="/">Início</a></b> — agenda de eventos, quem somos, guia do calouro, oportunidades, FAQ e formulários.</span></li>
-                <li><span><b><a href="/sobre">Sobre o CADe</a></b> — o que é a organização, como a gestão é eleita e onde ficamos.</span></li>
+                <li><span><b><a href="/sobre">Sobre o CADe</a></b> — o que é a organização, quem compõe a gestão e onde ficamos.</span></li>
                 <li><span><b><a href="/contato">Contato</a></b> — e-mail, Instagram, formulários e para onde levar cada assunto.</span></li>
                 <li><span><b><a href="/privacidade">Privacidade</a></b> — o que fazemos com os dados dos formulários.</span></li>
                 <li><span><b><a href="/galeria">Galeria</a></b> — fotos de eventos, festas e gestões anteriores.</span></li>

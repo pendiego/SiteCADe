@@ -87,7 +87,7 @@ export interface InicioAgenda {
 }
 
 // content/inicio/quem-somos.json
-export interface Membro { nome: string; foto: string; enquadramento: string }
+export interface Membro { nome: string; foto: string; enquadramento: string; cargo?: string | null; coordenacao?: boolean }
 export interface InicioQuemSomos {
   eyebrow: string;
   titulo: string;

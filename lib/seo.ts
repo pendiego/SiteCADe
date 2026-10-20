@@ -122,6 +122,18 @@ export async function ldSobre() {
   };
 }
 
+export async function ldMigalhasSobre() {
+  const { site } = await getConteudo();
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: site.nome, item: `${site.url}/` },
+      { '@type': 'ListItem', position: 2, name: 'Sobre o CADe', item: `${site.url}/sobre` },
+    ],
+  };
+}
+
 export async function ldContato() {
   const { site } = await getConteudo();
   return {

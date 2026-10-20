@@ -12,6 +12,14 @@ O painel e o site rodam no **mesmo projeto Next.js**. Todo o texto editável viv
 
 Os arquivos `cms/seed/**/*.json` são só a **carga inicial**: `npm run cms:seed` importa esse conteúdo para um banco vazio e não toca em nada que já exista. Depois disso, edite pelo painel, não pelos JSON.
 
+### Gestão: home e /sobre leem da mesma lista
+
+A lista **Membros da gestão** (painel → *Gestão e quem somos*) alimenta o carrossel da home, a seção da página `/sobre` e o `/sobre.md`. Cada membro tem nome, foto, enquadramento, **Cargo** (opcional) e **Faz parte da coordenação**. Quem está marcado aparece em "Coordenação" (foto grande e cargo); os demais, em "Membros". A ordem é a da lista no painel: arraste para reordenar.
+
+Em `/sobre`, o bloco aparece depois da seção cujo **Estilo** é `Gestão` (painel → *Sobre* → Seções). Em um banco que já existe, o seed não roda de novo: depois de `npm run cms:migrate`, escolha o estilo `Gestão` nessa seção, marque a coordenação e preencha os cargos no painel. Enquanto ninguém estiver marcado, todos aparecem em "Membros".
+
+Estilos de seção nas páginas institucionais (painel → *Sobre*, *Contato* ou *Privacidade* → Seções → Estilo): `Texto` (padrão), `Canais` (lista de contatos com filete rosa), `Lista` (itens `- **Título** — descrição` viram título à esquerda e descrição à direita, sem o travessão) e `Gestão` (acrescenta a coordenação e os membros depois do texto da seção). Em bancos existentes, escolha o estilo no painel depois do `npm run cms:migrate`.
+
 ## Desenvolvimento
 
 Requer Node.js **24.x** e um PostgreSQL acessível.
@@ -46,6 +54,23 @@ O `postinstall` aplica uma correção específica ao Next 16.4.0 para preservar 
 | `CMS_EMAIL_REMETENTE` | produção | Remetente **verificado no Resend** dos e-mails do CMS (ex.: `cms@cadeufpel.com`). Em produção o boot falha sem ele |
 | `RESEND_TO`, `RESEND_FROM` | não | Destinatário (padrão `cadesignufpel@gmail.com`) e remetente (padrão `CADe UFPel <naoresponda@cadeufpel.com>`) dos formulários |
 | `CMS_VERIFICACAO_EMAIL` | não | `true` exige verificação de e-mail em novas contas (por padrão as contas são criadas por um administrador) |
+
+### Formulários (`/api/enviar`)
+
+| Proteção | Comportamento |
+|---|---|
+| Origem | Só aceita POST com `Origin` ou `Referer` do mesmo host; senão 403. Barreira leve: um script pode forjar o cabeçalho |
+| Tamanho | Corpo acima de 20.000 caracteres dá 413, checado pelo `Content-Length` e também pelo corpo já lido (cobre POST sem `Content-Length`) |
+| Campos | Limites: nome 120, e-mail 254, semestre 40, área 200, tipo 30, assunto 150, mensagem 5.000, contato 200. Excesso, tipo errado ou e-mail inválido dão 400. Os `maxLength` de `components/Formularios.tsx` espelham esses valores |
+| Taxa | 5 envios por IP a cada 10 minutos; o 6º dá 429 com `Retry-After`. Contador em memória por instância serverless: freia abuso simples, não um ataque distribuído. Para isso, configure uma regra de rate limit no Firewall da Vercel para `/api/enviar` |
+| Honeypot | Campo `empresa` preenchido finge sucesso e não envia |
+| Saída | Todos os campos passam por `escapeHtml`; quebras de linha são removidas do assunto |
+
+Os testes estão em `test/api-enviar.test.ts`.
+
+### Chaves públicas do Google
+
+A home e `/galeria` carregam Agenda (Calendar) e galeria (Drive) direto do navegador com uma chave `AIzaSy…`, visível a qualquer visitante. No Google Cloud Console, mantenha essa chave restrita a referenciadores `cadeufpel.com/*` e `www.cadeufpel.com/*` e apenas às APIs Calendar e Drive. Se ela vazar sem restrição, gere outra.
 
 ## Acesso e permissões
 
@@ -105,6 +130,7 @@ Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `
    - "Esqueceu a senha?": o e-mail chega, o link redefine a senha e o login seguinte funciona.
    - Login de um editor de teste: edita conteúdo, mas não cria usuário nem altera papel.
 6. **Antes do merge**, rode `npm run cms:migrate` de novo contra o banco de produção (mesmo ambiente do passo 4). A migração `disponibilidade` adiciona três colunas à global de formulários e preenche os textos; o site publicado sem ela não consegue ler essa global e a home falha. Ela é segura com a linha já existente e pode ser repetida (migrações aplicadas são puladas). Preview e produção dividem o banco, então o preview atual continua funcionando depois dela.
+   A migração `gestao_cargo_lista` também precisa rodar **antes** do merge: ela adiciona `cargo` e `coordenacao` aos membros da gestão e os estilos `Gestão` e `Lista` das seções. O código novo consulta essas colunas, então sem a migração a leitura dos membros deve falhar (como ocorre com a `disponibilidade`). Em um banco que já tinha conteúdo, depois dela escolha no painel o estilo `Lista` na seção "O que fazemos" e `Gestão` na seção da gestão (em `/sobre`), e marque a coordenação e os cargos em *Gestão e quem somos*. Em um banco novo, o seed já cria tudo com esses estilos.
 7. Depois da validação, faça o merge.
 8. Em mudanças futuras de campos, gere e versione uma migração (`npm run cms:migrate:create`) e rode `npm run cms:migrate` antes de publicar. Em coluna `NOT NULL` nova de uma global que já tem linha, a migração precisa adicionar a coluna nulável, preencher e só então exigir `NOT NULL` (veja `cms/migrations/*_disponibilidade.ts`).
 

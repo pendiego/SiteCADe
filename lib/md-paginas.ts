@@ -1,4 +1,5 @@
 import { getConteudo } from '@/lib/conteudo';
+import { equipeMd } from '@/lib/equipe';
 import { oportunidadesPublicadas } from '@/lib/oportunidades';
 import { driveUrl } from '@/lib/links';
 
@@ -59,7 +60,7 @@ export async function mdInicio(hoje: Date): Promise<string> {
     [
       `# ${inicioSeo.agentes.titulo}`,
       '',
-      `${inicioSeo.agentes.resumo}\n- **Gestão atual:** ${quemSomos.membros.length} alunos eleitos`,
+      `${inicioSeo.agentes.resumo}\n- **Gestão atual:** ${quemSomos.membros.length} alunos`,
       '',
       '## Quem somos',
       '',
@@ -106,10 +107,13 @@ export async function mdInicio(hoje: Date): Promise<string> {
 }
 
 export async function mdInstitucional(slug: Institucional): Promise<string> {
-  const { site, paginas } = await getConteudo();
+  const { site, paginas, quemSomos } = await getConteudo();
   const p = paginas[slug];
   const secoes = p.secoes
-    .map((s) => `## ${s.titulo}\n\n${s.corpo}`)
+    .map((s) => {
+      const base = `## ${s.titulo}\n\n${s.corpo}`;
+      return s.estilo === 'gestao' ? `${base}\n\n${equipeMd(quemSomos.membros)}` : base;
+    })
     .join('\n\n');
   return absolutizar(
     [

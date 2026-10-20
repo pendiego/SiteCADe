@@ -181,7 +181,7 @@ export const paginaInstitucional = (): Field[] => [
   longo('lead', 'Introdução'),
   lista('secoes', 'Seções', 'Seção', [
     texto('titulo', 'Título da seção'),
-    selecao('estilo', 'Estilo', ['texto', 'canais']),
+    selecao('estilo', 'Estilo', ['texto', 'canais', 'gestao', 'lista']),
     markdown('corpo', 'Conteúdo'),
   ]),
   markdown('nota', 'Nota', false),

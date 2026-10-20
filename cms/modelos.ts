@@ -236,7 +236,15 @@ export const modelos: ModeloConteudo[] = [
       lista('membros', 'Membros da gestão', 'Membro', [
         texto('nome', 'Nome'),
         imagem('foto', 'Foto'),
-        comDica(texto('enquadramento', 'Cargo ou enquadramento'), 'Ex.: Presidência, Comunicação.'),
+        comDica(
+          texto('enquadramento', 'Enquadramento da foto'),
+          'Posição do rosto no recorte da foto, ex.: 50% 25%. Deixe como está se a foto já aparece bem.',
+        ),
+        comDica(texto('cargo', 'Cargo', false), 'Ex.: Coordenadora geral. Deixe vazio para quem é só membro.'),
+        comDica(
+          booleano('coordenacao', 'Faz parte da coordenação'),
+          'Marque para aparecer em "Coordenação" na página Sobre; sem marcar, aparece em "Membros".',
+        ),
       ]),
     ],
   },
