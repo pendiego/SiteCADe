@@ -15,12 +15,12 @@
   display:flex;align-items:center;justify-content:center;cursor:pointer;
   font-size:16px;font-weight:700;line-height:1;color:var(--navy-75);
 }
-.semana{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.semana{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 /* Grade sempre com 6 linhas: mês de 5 semanas não encurta o cartão. */
 .mes>.semana:last-child{grid-auto-rows:40px;min-height:calc(40px * 6 + 4px * 5)}
 .rotulo{font-size:11px;font-weight:600;color:var(--navy-50);text-align:center;padding-block:4px}
 .dia{
-  height:40px;border-radius:10px;border:2px solid transparent;background:none;
+  height:40px;min-width:0;padding:0;border-radius:10px;border:2px solid transparent;background:none;
   display:flex;align-items:center;justify-content:center;
   font-size:14px;font-weight:600;color:var(--navy-75);
   transition:background-color .16s ease;
@@ -46,8 +46,8 @@ button.dia{cursor:pointer}
 .detalhe-titulo,.detalhe-desc,.evt-titulo,.evt-desc{
   display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;
 }
-.detalhe-titulo{-webkit-line-clamp:2;height:calc(26px * 1.25 * 2)}
-.detalhe-desc{-webkit-line-clamp:2;height:calc(15px * 1.4 * 2)}
+.detalhe-titulo{display:block;overflow:visible;min-height:calc(26px * 1.25 * 2);overflow-wrap:anywhere}
+.detalhe-desc{display:block;overflow:visible;min-height:calc(15px * 1.4 * 2);white-space:pre-line;overflow-wrap:anywhere}
 
 /* Só o evento selecionado e o próximo — navegação por ‹ › no cabeçalho. */
 .eventos{display:flex;flex-direction:column;gap:12px}
