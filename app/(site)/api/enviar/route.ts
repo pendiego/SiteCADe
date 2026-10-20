@@ -40,14 +40,67 @@ function campo(rotulo: string, valor: unknown): string {
 
 type Corpo = Record<string, unknown>;
 
-// corpo JSON; se não for JSON válido, tenta application/x-www-form-urlencoded (mesmo fallback de api/enviar.js)
-async function lerCorpo(request: Request): Promise<Corpo> {
-  const copia = request.clone();
+// --- Limites de entrada ---
+const MAX_CORPO = 20000; // caracteres do corpo, medidos depois de lido: Content-Length pode faltar (POST chunked)
+const RE_EMAIL = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
+
+// string aparada; '' se ausente; null se o tipo for inválido ou passar do limite
+function texto(valor: unknown, max: number): string | null {
+  if (valor == null || valor === '') return '';
+  if (typeof valor === 'number') valor = String(valor);
+  if (typeof valor !== 'string') return null;
+  const t = valor.trim();
+  return t.length > max ? null : t;
+}
+
+// --- Limite de taxa por IP, em memória ---
+// Best-effort: cada instância serverless da Vercel tem o próprio contador, então isto freia abuso
+// simples, não um ataque distribuído (para isso, regra de rate limit no Firewall da Vercel).
+const JANELA_MS = 10 * 60 * 1000;
+const MAX_ENVIOS = 5;
+const acessos = new Map<string, { inicio: number; n: number }>();
+
+// 0 = liberado; >0 = segundos até poder tentar de novo
+function esperaSegundos(ip: string): number {
+  const agora = Date.now();
+  if (acessos.size > 5000) acessos.clear();
+  for (const [chave, reg] of acessos) if (agora - reg.inicio > JANELA_MS) acessos.delete(chave);
+  const reg = acessos.get(ip);
+  if (!reg) {
+    acessos.set(ip, { inicio: agora, n: 1 });
+    return 0;
+  }
+  if (reg.n >= MAX_ENVIOS) return Math.ceil((reg.inicio + JANELA_MS - agora) / 1000);
+  reg.n++;
+  return 0;
+}
+
+function ipDe(request: Request): string {
+  const xff = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim();
+  return xff || request.headers.get('x-real-ip') || 'desconhecido';
+}
+
+// só aceita POST vindo de páginas do próprio site (Origin ou Referer com o mesmo host)
+function mesmaOrigem(request: Request): boolean {
+  const origem = request.headers.get('origin') || request.headers.get('referer');
+  if (!origem) return false;
+  try {
+    return new URL(origem).host === (request.headers.get('host') || new URL(request.url).host);
+  } catch {
+    return false;
+  }
+}
+
+// corpo JSON; se não for JSON válido, tenta application/x-www-form-urlencoded (mesmo fallback de api/enviar.js).
+// Devolve null se o corpo lido passar de MAX_CORPO.
+async function lerCorpo(request: Request): Promise<Corpo | null> {
+  const bruto = await request.text();
+  if (bruto.length > MAX_CORPO) return null;
   let corpo: unknown;
   try {
-    corpo = await request.json();
+    corpo = JSON.parse(bruto);
   } catch {
-    const params = new URLSearchParams(await copia.text());
+    const params = new URLSearchParams(bruto);
     // o envio sem JavaScript repete `disponibilidade` por horário marcado; fromEntries guardaria só o último
     corpo = { ...Object.fromEntries(params), disponibilidade: params.getAll('disponibilidade') };
   }
@@ -68,6 +121,16 @@ export function GET() {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  if (!mesmaOrigem(request)) return erro('Origem não permitida', 403);
+  if (Number(request.headers.get('content-length') || 0) > MAX_CORPO) return erro('Mensagem grande demais', 413);
+  const espera = esperaSegundos(ipDe(request));
+  if (espera > 0) {
+    return Response.json(
+      { ok: false, erro: 'Muitos envios. Tente de novo em alguns minutos.' },
+      { status: 429, headers: { 'Retry-After': String(espera) } },
+    );
+  }
+
   const apiKey = limparEnv(process.env.RESEND_API_KEY, '');
   if (!apiKey) {
     console.error('[api/enviar] RESEND_API_KEY não configurada');
@@ -75,6 +138,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const body = await lerCorpo(request);
+  if (!body) return erro('Mensagem grande demais', 413);
   const formulario = body.formulario;
 
   // honeypot: campo invisível pro usuário real, se vier preenchido é bot — finge sucesso e não envia
@@ -86,9 +150,18 @@ export async function POST(request: Request): Promise<Response> {
   let html: string;
 
   if (formulario === 'participar') {
-    const { nome, email, semestre, area } = body;
+    const nome = texto(body.nome, 120);
+    const email = texto(body.email, 254);
+    const semestre = texto(body.semestre, 40);
+    const area = texto(body.area, 200);
+    if (nome === null || email === null || semestre === null || area === null) {
+      return erro('Algum campo está longo demais ou inválido', 400);
+    }
     if (!nome || !email) {
       return erro('Nome e e-mail são obrigatórios', 400);
+    }
+    if (!RE_EMAIL.test(email)) {
+      return erro('E-mail inválido', 400);
     }
     const disponibilidade = normalizarDisponibilidade(body.disponibilidade);
     if (!disponibilidade) {
@@ -104,7 +177,14 @@ export async function POST(request: Request): Promise<Response> {
       campo('Disponibilidade para reunião', descreverDisponibilidade(disponibilidade)),
     ].join('');
   } else if (formulario === 'falar') {
-    const { tipo, assunto: assuntoMsg, mensagem, anonimo, contato } = body;
+    const tipo = texto(body.tipo, 30);
+    const assuntoMsg = texto(body.assunto, 150);
+    const mensagem = texto(body.mensagem, 5000);
+    const contato = texto(body.contato, 200);
+    const anonimo = body.anonimo;
+    if (tipo === null || assuntoMsg === null || mensagem === null || contato === null) {
+      return erro('Algum campo está longo demais ou inválido', 400);
+    }
     if (!assuntoMsg || !mensagem) {
       return erro('Assunto e mensagem são obrigatórios', 400);
     }

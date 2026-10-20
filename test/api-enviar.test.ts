@@ -16,10 +16,18 @@ describe('api/enviar', () => {
     vi.unstubAllGlobals();
   });
 
-  const json = (corpo: unknown) =>
+  // cada chamada vem de um IP novo (o limite de taxa é por IP) e do próprio site (checagem de origem)
+  let ipSeq = 0;
+  const cabecalhos = (extra: Record<string, string> = {}, ip = `10.0.0.${++ipSeq}`) => ({
+    Origin: 'https://cadeufpel.com',
+    Host: 'cadeufpel.com',
+    'X-Forwarded-For': ip,
+    ...extra,
+  });
+  const json = (corpo: unknown, extra: Record<string, string> = {}, ip?: string) =>
     new Request('https://cadeufpel.com/api/enviar', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: cabecalhos({ 'Content-Type': 'application/json', ...extra }, ip),
       body: JSON.stringify(corpo),
     });
 
@@ -49,7 +57,7 @@ describe('api/enviar', () => {
   it('aceita corpo form-urlencoded com vários horários e envia pelo Resend', async () => {
     const req = new Request('https://cadeufpel.com/api/enviar', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: cabecalhos({ 'Content-Type': 'application/x-www-form-urlencoded' }),
       body: 'formulario=participar&nome=Ana&email=a%40b.com&disponibilidade=qua-14%3A30&disponibilidade=seg-09%3A00&disponibilidade=seg-09%3A30',
     });
     const res = await postEnviar(req);
@@ -92,5 +100,66 @@ describe('api/enviar', () => {
       json({ formulario: 'participar', nome: 'Ana', email: 'a@b.com', disponibilidade: ['sex-17:30'] }),
     );
     expect(res.status).toBe(502);
+  });
+
+  const valido = {
+    formulario: 'participar',
+    nome: 'Ana',
+    email: 'ana@exemplo.com',
+    disponibilidade: ['seg-09:00'],
+  };
+
+  it('corpo enorme sem Content-Length (chunked) responde 413 e não envia', async () => {
+    // o cabeçalho não declara tamanho: só a medição do corpo lido pega o campo extra gigante
+    const extra = { ...valido, extra: 'x'.repeat(25000) };
+    expect((await postEnviar(json(extra))).status).toBe(413);
+    const form = new Request('https://cadeufpel.com/api/enviar', {
+      method: 'POST',
+      headers: cabecalhos({ 'Content-Type': 'application/x-www-form-urlencoded' }),
+      body: new URLSearchParams({ formulario: 'falar', assunto: 'a', mensagem: 'm', extra: 'x'.repeat(25000) }),
+    });
+    expect((await postEnviar(form)).status).toBe(413);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('Content-Length acima do limite responde 413', async () => {
+    expect((await postEnviar(json(valido, { 'Content-Length': '30000' }))).status).toBe(413);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('sem Origin ou de outro site responde 403', async () => {
+    const semOrigem = new Request('https://cadeufpel.com/api/enviar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Host: 'cadeufpel.com', 'X-Forwarded-For': '10.9.0.1' },
+      body: JSON.stringify(valido),
+    });
+    expect((await postEnviar(semOrigem)).status).toBe(403);
+    expect((await postEnviar(json(valido, { Origin: 'https://evil.example' }))).status).toBe(403);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('campo acima do limite, tipo errado ou e-mail inválido responde 400', async () => {
+    for (const corpo of [
+      { ...valido, nome: 'a'.repeat(121) },
+      { ...valido, nome: { x: 1 } },
+      { ...valido, email: 'nao-e-email' },
+      { formulario: 'falar', assunto: 'a', mensagem: 'm'.repeat(5001) },
+    ]) {
+      expect((await postEnviar(json(corpo))).status).toBe(400);
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('6º envio do mesmo IP na janela responde 429 com Retry-After', async () => {
+    const ip = '10.8.8.8';
+    const status: number[] = [];
+    let ultima!: Response;
+    for (let i = 0; i < 6; i++) {
+      ultima = await postEnviar(json(valido, {}, ip));
+      status.push(ultima.status);
+    }
+    expect(status.slice(0, 5)).toEqual([200, 200, 200, 200, 200]);
+    expect(ultima.status).toBe(429);
+    expect(Number(ultima.headers.get('Retry-After'))).toBeGreaterThan(0);
   });
 });

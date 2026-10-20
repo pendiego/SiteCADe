@@ -193,11 +193,11 @@ export default function Formularios({ textos }: Props) {
 
           <div className="campo">
             <label htmlFor="p-nome">{p.nomeRotulo}</label>
-            <input id="p-nome" name="nome" type="text" placeholder={p.nomePlaceholder} required />
+            <input id="p-nome" name="nome" type="text" maxLength={120} placeholder={p.nomePlaceholder} required />
           </div>
           <div className="campo">
             <label htmlFor="p-email">{p.emailRotulo}</label>
-            <input id="p-email" name="email" type="email" placeholder={p.emailPlaceholder} required />
+            <input id="p-email" name="email" type="email" maxLength={254} placeholder={p.emailPlaceholder} required />
           </div>
           <div className="campo-duplo">
             <div className="campo">
@@ -270,11 +270,11 @@ export default function Formularios({ textos }: Props) {
 
           <div className="campo">
             <label htmlFor="f-assunto">{f.assuntoRotulo}</label>
-            <input id="f-assunto" name="assunto" type="text" placeholder={f.assuntoPlaceholder} required />
+            <input id="f-assunto" name="assunto" type="text" maxLength={150} placeholder={f.assuntoPlaceholder} required />
           </div>
           <div className="campo">
             <label htmlFor="f-msg">{f.mensagemRotulo}</label>
-            <textarea id="f-msg" name="mensagem" placeholder={f.mensagemPlaceholder} required />
+            <textarea id="f-msg" name="mensagem" maxLength={5000} placeholder={f.mensagemPlaceholder} required />
           </div>
 
           <label className="check" data-od-id="check-anonimo">
@@ -297,6 +297,7 @@ export default function Formularios({ textos }: Props) {
               id="f-contato"
               name="contato"
               type="text"
+              maxLength={200}
               placeholder={f.contatoPlaceholder}
               disabled={anonimo}
               style={{ opacity: anonimo ? 0.5 : undefined }}
