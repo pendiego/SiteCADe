@@ -1,0 +1,43 @@
+{
+  "eyebrow": "DÚVIDAS",
+  "titulo": "Perguntas que você pode ter.",
+  "texto": "Não achou a sua? Manda mensagem para o nosso insta, assim que conseguirmos te retornamos!",
+  "itens": [
+    {
+      "id": "faq-o-que-e",
+      "pergunta": "O que é o CADe, afinal?",
+      "resposta": "Somos o Centro Acadêmico do curso de Design da UFPel: alunos que representam a turma junto ao colegiado, organizam eventos e centralizam informação. Você não precisa fazer parte da gestão pra participar.",
+      "aberto": true
+    },
+    {
+      "id": "faq-na-pratica",
+      "pergunta": "O que vocês fazem na prática?",
+      "resposta": "A atuação do CADe se materializa através de iniciativas que ampliam repertórios, promovem conexões e fortalecem a experiência universitária. Organizamos eventos, encontros, oficinas e ações interdisciplinares, fomentando atividades extracurriculares que agregam não apenas ao aprendizado acadêmico, mas à vivência coletiva do curso. Além disso, trabalhamos para garantir suporte, orientação e representação discente.",
+      "aberto": false
+    },
+    {
+      "id": "faq-como-entro",
+      "pergunta": "Como eu entro no CADe?",
+      "resposta": "Se você tem interesse em participar do CADe, basta preencher o [formulário](#form-participar) aqui no site! Mas atenção: o envio do formulário não efetiva um membro automaticamente — primeiro vamos agendar um horário para conversar e explicar como o DA funciona.",
+      "aberto": false
+    },
+    {
+      "id": "faq-calouro",
+      "pergunta": "Sou calouro. Por onde começo?",
+      "resposta": "Primeiramente, parabéns e bem-vindo(a)! Você encontra informações na [área de calouros](#area-calouros) aqui no site, e pode entrar em contato com a gente pelo [Instagram](https://www.instagram.com/cadesignufpel). Todo começo de semestre organizamos um grupo de WhatsApp com veteranos, CADe e ingressantes para tirar dúvidas mais específicas.",
+      "aberto": false
+    },
+    {
+      "id": "faq-reclamacao",
+      "pergunta": "Como faço uma reclamação sobre o curso?",
+      "resposta": "Você pode entrar em contato direto com a Coordenação do curso pelo e-mail [design.ufpel@gmail.com](mailto:design.ufpel@gmail.com), ou encaminhar sua reclamação pelo nosso [formulário](#form-falar). Se for pelo nosso canal, o CADe leva o tópico para coordenadores e professores para tentar encontrar uma solução possível.",
+      "aberto": false
+    },
+    {
+      "id": "faq-notas",
+      "pergunta": "Onde vejo notas, horários e matrícula?",
+      "resposta": "Você consegue acessar essas informações pelo site do [COBALTO](https://cobalto.ufpel.edu.br), na área do Aluno > Consulta. Uma dica é instalar a versão mobile em seu celular, assim você tem uma versão mais resumida e rápida ao seu alcance.",
+      "aberto": false
+    }
+  ]
+}

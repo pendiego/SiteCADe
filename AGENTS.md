@@ -4,26 +4,16 @@ Página única do Centro Acadêmico de Design da UFPel, migrada de um design Fig
 
 ## Arquivos
 
-- `index.html` — **o deliverable**. HTML e JS num só arquivo (`<script>` no fim do body); CSS em `css/*.css` via `<link>` no head. Nome `index.html` para servir na raiz do deploy (Vercel).
-- `paginas/` — páginas secundárias em HTML e representações públicas em Markdown:
-  - `paginas/sobre.html` e `paginas/sobre.md` (servidos na URL pública `/sobre`).
-  - `paginas/contato.html` e `paginas/contato.md` (servidos na URL pública `/contato`).
-  - `paginas/privacidade.html` e `paginas/privacidade.md` (servidos na URL pública `/privacidade`).
-  - `paginas/galeria.html` e `paginas/galeria.md` (servidos na URL pública `/galeria`).
-  - `paginas/index.md` (representação Markdown da home `/`).
-  - Os HTMLs em `paginas/` referenciam assets e estilos com caminhos relativos `../css/` e `../assets/`.
-  - As URLs públicas nunca expõem `/paginas/`: o `vercel.json` faz rewrites de `/sobre` para `/paginas/sobre`, etc.
-- `css/` — estilos divididos por arquivo (ordem de carga no `<head>` segue a cascata):
-  - `base.css` — `@font-face` (LT Superior, self-hosted `.woff2`), `:root`/tokens, reset, tipografia utilitária, estrutura, botões, focus-visible.
-  - `nav.css`, `hero.css`, `agenda.css` — seções 01, 02 e 03.
-  - `secoes.css` — seções 04 (quem somos), 05 (histórico/galeria), lojinha, 06 (guia), 07 (oportunidades), 08 (FAQ), 09 (links), 10 (formulários) e 11 (footer).
-  - `galeria.css` — layout específico de `galeria.html`.
-  - `componentes.css` — faixa de fotos, popup de oportunidade, botão voltar ao topo.
-  - `icons.css` — `@font-face` do Material Symbols + classes `.m-icon` / `.brand-icon`.
-  - `responsivo.css` — todas as `@media` (1180, 900, 720, 400, reduced-motion).
-- `assets/` — SVGs de marca (logos, mascotes, favicon), fontes `.woff2` em `assets/font/` e imagens WebP de produtos e membros da gestão em `assets/FotosMembros/`. Sempre referência relativa e nomes de arquivo em ASCII/kebab-case sem espaços ou acentos. Os ícones de UI vêm da fonte `assets/font/material-symbols.woff2` (ver regra de ícones).
-- `test/` — testes de contrato para agentes:
-  - `test/agentes.test.js` — suíte de verificação de contratos públicos e negociação de Accept (sem framework, executa com `node test/agentes.test.js`).
+- `app/(site)/` — site público (Next.js 16.4.0, App Router, TypeScript): home, `/sobre`, `/contato`, `/privacidade`, `/galeria`, rotas Markdown, `llms.txt` e APIs públicas (`enviar`, `oportunidades`, `404`). `layout.tsx` importa o CSS global.
+- `app/(payload)/` — painel `/admin` e REST do CMS em `/api/cms`. Arquivos gerados pelo Payload (`importMap.js`); não edite à mão. `app/global-not-found.tsx` é o 404 do site.
+- `components/` — markup React portado do site original. `'use client'` apenas para estado/efeitos; nenhuma IIFE legada.
+- `payload.config.ts` e `cms/` — Payload 3.90.2 (PostgreSQL, Vercel Blob, Resend). 21 globais estruturadas em `cms/modelos.ts` (+ `cms/campos.ts`), usuários e mídia em `cms/collections/`, acesso em `cms/access.ts`, seed em `scripts/cms-seed.ts`, migrações em `cms/migrations/`. Carga inicial em `cms/seed/*.json` (só leitura pelo seed; o conteúdo vivo está no banco).
+- `lib/conteudo.ts` — `getConteudo()` lê as globais, valida e projeta (`cms/projecao.ts`) para o contrato público de `lib/tipos.ts`. Não há conteúdo estático em runtime. `lib/md-paginas.ts` e `lib/seo.ts` são assíncronos e geram Markdown/SEO do mesmo conteúdo.
+- `app/styles/` — estilos globais mantidos: `base`, `nav`, `hero`, `agenda`, `secoes`, `componentes`, `icons`, `responsivo`, `institucional`, `galeria`, nessa ordem.
+- `public/assets/` — marca, fontes e imagens estáticas. Imagens novas editáveis vão para o Blob via painel (PNG/JPEG/WebP, 4 MiB, `kebab-case`, convertidas para WebP no servidor; URL direta do Blob, sem `clientUploads`).
+- `proxy.ts` — negociação de `Accept`; `next.config.ts` — redirects, headers e `withPayload`; `vercel.json` — preset `nextjs`.
+- `scripts/patch-next-vary.cjs` — correção reproduzível do bug de Vary do Next 16.4.0 no postinstall; reavaliar antes de atualizar a versão.
+- `test/` — contratos públicos e segurança, executados com `npm test` (Vitest).
 
 Fonte do design: Figma `fFejL7f3oqdLNoPUqCwzD0` (arquivo "CADe - Landing Page"). Os textos oficiais vêm de lá — não invente copy.
 
@@ -31,10 +21,10 @@ Fonte do design: Figma `fFejL7f3oqdLNoPUqCwzD0` (arquivo "CADe - Landing Page").
 
 - **Idioma:** todo texto visível em pt-BR.
 - **Tokens:** só as variáveis de `:root` (`--navy`, `--ciano`, `--verde`, `--amarelo`, `--rosa`, `--bg-*`, `--gut`, `--sec-y`, `--r-*`). Nunca hex solto no CSS novo.
-- **Tipografia:** LT Superior (self-hosted em `assets/font/`, formato `.woff2`) para tudo.
+- **Tipografia:** LT Superior (self-hosted em `public/assets/font/`, formato `.woff2`) para tudo.
 - **`data-od-id`:** cada seção, heading, CTA, controle e card repetido tem um id kebab-case único. Mantenha ao editar e adicione em elementos novos.
-- **Sem dependências.** Nada de build, framework ou CDN de JS. O JavaScript da página é ES5 em IIFEs separadas, uma por feature; `middleware.js` e `api/*.js` usam a sintaxe de módulos/runtime exigida pela Vercel. Ícones não animam; não adicione lib de animação.
-- **Ícones (Material Symbols):** todo ícone de UI é `<span class="m-icon" aria-hidden="true">&#xNNNN;</span>` — Material Symbols Outlined, self-hosted em `assets/font/material-symbols.woff2` (subset, ~1KB). Use o **codepoint PUA**, não a ligadura de texto: com `font-display:block` a ligadura mostraria o nome cru ("arrow_forward") antes da fonte carregar. Tamanho por `font-size` (`.m-icon` = 20px; modificadores `.m-icon--16`, `.m-icon--18`), nunca `width`/`height`. `aria-hidden` é obrigatório — sem ele o leitor de tela anuncia o caractere PUA. Ícones são estáticos: não há animação de hover/focus. Cor padrão é `currentColor`; cor de marca fixa usa token (ex.: `.faq-icone--mais{color:var(--rosa)}`), nunca hex.
+- **Dependências:** Next.js, React, TypeScript, marked e a stack Payload (`payload`, `@payloadcms/*`, `sharp`, `graphql`) são a stack aprovada. Não adicione framework, CDN ou biblioteca de animação sem pedido. Nenhum script de CDN no site nem no painel. Node alvo: 24.x.
+- **Ícones (Material Symbols):** todo ícone de UI é `<span className="m-icon" aria-hidden="true">{'\ue5c8'}</span>` com o codepoint PUA do subset self-hosted em `public/assets/font/`. Não use ligaduras de texto. Tamanho por `font-size` (`.m-icon` = 20px; modificadores `.m-icon--16`, `.m-icon--18`), nunca `width`/`height`. `aria-hidden` é obrigatório. Ícones são estáticos; cor padrão `currentColor`, marca fixa via token.
   - **Glifo novo:** o subset só traz os codepoints em uso. Adicionar ícone exige re-subsetar a fonte incluindo o novo codepoint, senão ele renderiza como retângulo vazio.
   - **Logos de marca** (GitHub, Instagram) não existem no Material Symbols: seguem SVG inline com `class="brand-icon"`.
 - **Não use `scrollIntoView`** — quebra o preview embutido.
@@ -49,7 +39,7 @@ Quatro `div.area` com fundo próprio, cada uma com uma `.faixa` colorida no topo
 |---|---|---|
 | CADe | `#area-cade` | hero, 01 agenda, 02 quem somos, 03 histórico, lojinha |
 | Calouros | `#area-calouros` | 04 guia do calouro (foto à esquerda + 4 cards) |
-| Dicas | `#area-dicas` | 05 oportunidades dinâmicas (`/api/oportunidades` ← planilha; não edite cards no HTML), 06 FAQ, 07 atalhos |
+| Dicas | `#area-dicas` | 05 oportunidades (global `oportunidades-dados`, editável no painel), 06 FAQ, 07 atalhos |
 | Formulários | `#area-formularios` | 08 fale com a gente (dois forms) |
 
 A nav marca a área ativa via `aria-current="page"` (bolinha rosa em `::before`), calculada por listener de scroll com a constante `FOLGA` como margem de erro para áreas curtas.
@@ -61,16 +51,16 @@ A nav marca a área ativa via `aria-current="page"` (bolinha rosa em `::before`)
 3. Cheque os breakpoints existentes: 1180px, 900px, 720px e 400px. Sem scroll horizontal no mobile.
 4. Estados `hover`/`focus-visible` sempre com par fundo+texto definido; contraste nunca cai.
 5. **Sem telemetria:** não reintroduza bibliotecas, coletores de eventos ou scripts analíticos.
-6. **Verificação:** execute `node test/agentes.test.js` após alterações para garantir que contratos de rotas e representações continuam íntegros.
+6. **Verificação:** execute `npm test`, `npm run typecheck` e `npm run build`. Exercite o build com `npm start` contra um PostgreSQL real: HTML deve preservar `Vary: Accept`, negociação Markdown e status 404. Testes isolados do proxy não detectam sobrescritas de headers pelo Next.
+7. **CMS:** novo campo = editar `cms/modelos.ts`/`campos.ts` **e** gerar migração (`npm run cms:migrate:create`), `npm run cms:types` e, se mudar componentes do painel, `npm run cms:importmap`. Ids técnicos (`odId`) viram `data-od-id` públicos: não os altere em itens existentes. Nunca abra cadastro público nem dê escrita a usuários inativos; mantenha `papel` e `ativo` protegidos por acesso de campo.
 
 ## CodeGraph para agentes
 
 O repositório inclui `codegraph.config.json` como configuração de descoberta. Ela
-mantém no grafo HTML, CSS, JavaScript (incluindo `api/` e `test/`) e Markdown, e
-exclui `assets/`, fontes, imagens, binários, `.env*`, `node_modules/`, `.vercel/`,
-`.codegraph/` e `scratch/`. O `.gitignore` continua sendo aplicado. Arquivos de
-rota como `vercel.json`, `robots.txt` e `sitemap.xml` ficam fora do conjunto de
-linguagens descobertas e devem ser lidos ao vivo quando a tarefa precisar deles.
+mantém no grafo HTML, CSS, JavaScript, TypeScript/TSX e Markdown, e exclui
+`public/assets/`, `.next/`, fontes, imagens, binários, `.env*`, `node_modules/`,
+`.vercel/`, `.codegraph/` e `scratch/`. O `.gitignore` continua sendo aplicado.
+Leia configurações e arquivos públicos de rota ao vivo quando necessários.
 
 Antes de uma consulta, confirme a versão e a sintaxe realmente instaladas:
 
@@ -79,31 +69,16 @@ codegraph version
 codegraph --help
 ```
 
-Na CLI legada atualmente observada (`codegraph version` 1.6.0), use o caminho
-posicional/`--path` e não invente opções da CLI moderna:
-
-```sh
-codegraph status .
-codegraph files --path . --format tree --max-depth 3
-codegraph query "preferMarkdown" --path . --json
-codegraph explore "Accept markdown Vercel 404" --path . --max-files 4
-codegraph context "formulários index api enviar Resend" --path . --format json --no-code
-```
-
-Essas consultas estruturais pressupõem que o índice já exista; sem indexação
-autorizada, limite-se a `version`/`help` e à leitura direta dos arquivos.
-
-Essa CLI legada não reconhece `codegraph.config.json`; não a substitua por
-flags diferentes. Depois de atualizar para uma versão que declare esse arquivo
-no `codegraph --help`, as consultas equivalentes usam `--root .`, por exemplo:
+Na CLI 2.3.20 observada durante a migração, consultas usam `--root .`, por exemplo:
 
 ```sh
 codegraph orient --root . --budget small --json
-codegraph links --root . --json
-codegraph unresolved --root . --json
-codegraph deps api/enviar.js --root . --json
-codegraph rdeps index.html --root . --json
+codegraph explore "Accept markdown proxy 404" --root .
+codegraph deps app/api/enviar/route.ts --root .
+codegraph rdeps app/page.tsx --root .
 ```
+
+Prefira MCP quando disponível. Consultas são evidência estrutural, não prova de runtime.
 
 `codegraph init`/`index` criam ou atualizam estado em `.codegraph/`; só execute
 isso quando a tarefa pedir indexação. Consultas são somente leitura. Verifique
@@ -132,3 +107,13 @@ Use MCP por stdio para manter o servidor no repositório correto; não exponha
 uma porta pública. Reinicie o cliente Codex/Claude após instalar ou atualizar
 o CodeGraph. O agente ainda deve ler os arquivos ao vivo para copy e configuração
 (`codegraph file`/`get_file` na CLI moderna) antes de tomar decisões.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

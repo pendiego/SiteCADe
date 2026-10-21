@@ -1,0 +1,88 @@
+/* ============================================================
+   03 Agenda
+   ============================================================ */
+.agenda-head{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.agenda-corpo{display:grid;grid-template-columns:520px minmax(0,1fr);gap:24px;margin-top:40px;align-items:start}
+.calendario{display:flex;flex-direction:column;gap:16px}
+.mes{
+  background:var(--branco);border:1px solid var(--linha);border-radius:var(--r-painel);
+  padding:24px;display:flex;flex-direction:column;gap:12px;
+}
+.mes-nome{font-size:13px;font-weight:600}
+.mes-cab{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mes-nav{
+  background:none;border:1px solid var(--linha);border-radius:8px;width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:16px;font-weight:700;line-height:1;color:var(--navy-75);
+}
+.semana{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+/* Grade sempre com 6 linhas: mês de 5 semanas não encurta o cartão. */
+.mes>.semana:last-child{grid-auto-rows:40px;min-height:calc(40px * 6 + 4px * 5)}
+.rotulo{font-size:11px;font-weight:600;color:var(--navy-50);text-align:center;padding-block:4px}
+.dia{
+  height:40px;min-width:0;padding:0;border-radius:10px;border:2px solid transparent;background:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:600;color:var(--navy-75);
+  transition:background-color .16s ease;
+}
+.dia--vazio{visibility:hidden}
+button.dia{cursor:pointer}
+.dia--hoje{background:var(--amarelo-claro);color:var(--navy);font-weight:700}
+.dia--amarelo{background:var(--amarelo);color:var(--navy);font-weight:700}
+.dia--ciano{background:var(--ciano);color:var(--navy);font-weight:700}
+.dia--azul{background:var(--azul);color:var(--navy);font-weight:700}
+.dia[aria-pressed="true"]{background:var(--rosa-forte);border-color:var(--rosa-forte);color:var(--branco)}
+
+.painel{display:flex;flex-direction:column;gap:16px;min-width:0}
+.detalhe{
+  background:var(--branco);border:1px solid var(--linha);border-radius:var(--r-painel);
+  padding:24px;display:flex;flex-direction:column;gap:8px;
+}
+.detalhe-rot{font-size:11px;font-weight:600;color:var(--navy-70)}
+.detalhe-data{font-size:13px;font-weight:600;color:var(--navy-75)}
+.detalhe-titulo{font-size:26px;font-weight:800;line-height:1.25}
+.detalhe-desc{font-size:15px;line-height:1.4;color:rgba(11,11,109,.8)}
+/* Alturas fixas: trocar de evento não muda o tamanho dos blocos. */
+.detalhe-titulo,.detalhe-desc,.evt-titulo,.evt-desc{
+  display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;
+}
+.detalhe-titulo{display:block;overflow:visible;min-height:calc(26px * 1.25 * 2);overflow-wrap:anywhere}
+.detalhe-desc{display:block;overflow:visible;min-height:calc(15px * 1.4 * 2);white-space:pre-line;overflow-wrap:anywhere}
+
+/* Só o evento selecionado e o próximo — navegação por ‹ › no cabeçalho. */
+.eventos{display:flex;flex-direction:column;gap:12px}
+.evt-mes{display:flex;flex-direction:column;gap:12px}
+.evt-mes-head{display:flex;align-items:center;gap:12px;height:28px}
+.evt-mes-head .mes-nav:disabled{opacity:.35;cursor:default}
+.evt-mes-head span{font-size:13px;font-weight:600;letter-spacing:.5px;white-space:nowrap}
+.regua{height:1px;flex:1;background:var(--linha)}
+.evt{
+  display:flex;align-items:center;gap:20px;width:100%;text-align:left;
+  background:var(--branco);border:1px solid var(--linha);border-radius:var(--r-painel);
+  padding:20px 24px;cursor:pointer;
+  transition:border-color .18s ease,transform .18s ease;
+}
+.evt-data{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;
+  border-radius:12px;width:72px;height:72px;
+}
+.evt-data--amarelo{background:var(--amarelo)}
+.evt-data--ciano{background:var(--ciano)}
+.evt-data--azul{background:var(--azul)}
+.evt-dia{font-size:26px;font-weight:800;line-height:1}
+.evt-ms{font-size:11px;font-weight:600;line-height:1.4;letter-spacing:.66px}
+.evt-dow{font-size:10px;font-weight:600;color:rgba(11,11,109,.65)}
+.evt-info{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.evt-titulo{font-size:19px;font-weight:700;line-height:1.4;-webkit-line-clamp:1;height:calc(19px * 1.4)}
+.evt-desc{font-size:15px;line-height:1.4;-webkit-line-clamp:2;height:calc(15px * 1.4 * 2)}
+.evt-seta{font-size:25px;flex:none;width:28px;text-align:center}
+
+@media (hover:hover){
+  .mes-nav:hover{background:rgba(11,11,109,.09);color:var(--navy)}
+  button.dia:hover{background:rgba(11,11,109,.09);color:var(--navy)}
+  button.dia[aria-pressed="true"]:hover{background:var(--rosa-forte);color:var(--branco)}
+  .dia--amarelo:hover{background:#e6c000}
+  .dia--ciano:hover{background:#00bed0}
+  .dia--azul:hover{background:#1c8dd9}
+  .evt:hover{border-color:var(--navy);transform:translateY(-2px)}
+}

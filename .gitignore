@@ -2,6 +2,7 @@
 node_modules/
 .env
 .env.*
+!.env.example
 *.log
 .vercel
 .codegraph/
@@ -9,3 +10,7 @@ node_modules/
 graphify-out/
 CLAUDE.md
 scratch/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+cms/media-local/

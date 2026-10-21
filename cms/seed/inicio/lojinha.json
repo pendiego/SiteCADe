@@ -1,0 +1,40 @@
+{
+  "eyebrow": "LOJINHA",
+  "titulo": "Vista-se de Design.",
+  "lead": "A lojinha do CADe conta com ilustrações e designers autorais dos alunos de design: você vai encontrar ecobags, bottons, posters, adesivos e muito mais. O valor arrecadado sempre retorna para a comunidade, usado para organizar mais eventos!",
+  "badgeRotulo": "SAIBA MAIS PELO INSTA",
+  "badgeHref": "https://www.instagram.com/cadesignufpel",
+  "hoverRotulo": "Ver no Instagram",
+  "produtos": [
+    {
+      "id": "produto-camiseta",
+      "titulo": "Ecobag CADe",
+      "subtitulo": "algodão",
+      "imagem": "/assets/uploads/produtos/produto-camiseta.webp",
+      "alt": "Ecobag do CADe",
+      "href": "https://www.instagram.com/cadesignufpel"
+    },
+    {
+      "id": "produto-moletom",
+      "titulo": "Produtos Gráficos CADe",
+      "subtitulo": "cartazes, adesivos e bottons",
+      "imagem": "/assets/uploads/produtos/produto-graficos.webp",
+      "alt": "Produtos gráficos do CADe",
+      "href": "https://www.instagram.com/cadesignufpel"
+    },
+    {
+      "id": "produto-adesivos",
+      "titulo": "E muito mais!!",
+      "subtitulo": "Compre e nos apoie",
+      "imagem": "/assets/uploads/produtos/produto-adesivos.webp",
+      "alt": "Catálogo de produtos do CADe",
+      "href": "https://www.instagram.com/cadesignufpel"
+    }
+  ],
+  "cta": {
+    "titulo": "Ver tudo no Instagram",
+    "subtitulo": "Catálogo completo e encomendas",
+    "href": "https://www.instagram.com/cadesignufpel"
+  },
+  "nota": "Encomendas pelo Instagram ou em eventos que o CADe participa · pagamento por Pix ou dinheiro."
+}

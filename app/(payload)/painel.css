@@ -1,0 +1,77 @@
+@font-face{
+  font-family:'LTSuperior';font-weight:400;font-style:normal;font-display:swap;
+  src:url('/assets/font/LTSuperior-Regular.c014d3ebf198.woff2') format('woff2');
+}
+@font-face{
+  font-family:'LTSuperior';font-weight:600;font-style:normal;font-display:swap;
+  src:url('/assets/font/LTSuperior-SemiBold.e43397e5d18b.woff2') format('woff2');
+}
+@font-face{
+  font-family:'LTSuperior';font-weight:700;font-style:normal;font-display:swap;
+  src:url('/assets/font/LTSuperior-Bold.b6563c8baae3.woff2') format('woff2');
+}
+
+/* espelha app/styles/base.css */
+:root{
+  --navy:#0b0b6d;
+  --navy-hover:#16168f;
+  --ciano:#00dbee;
+  --verde:#8cde51;
+  --amarelo:#ffd500;
+  --azul:#36a4f2;
+  --rosa:#ff006d;
+  --bg-cade:#f2f3f9;
+  --r-card:20px;
+}
+
+:root{--font-body:'LTSuperior',system-ui,sans-serif}
+
+html[data-theme='light']{
+  --theme-bg:var(--bg-cade);
+  --theme-text:var(--navy);
+  --theme-elevation-800:var(--navy);
+  --theme-elevation-900:var(--navy-hover);
+  --theme-elevation-1000:var(--navy);
+}
+
+.cade-painel{max-width:1100px;margin-bottom:48px}
+.cade-painel h2{font-size:28px;font-weight:700;letter-spacing:-.01em;text-wrap:balance;margin:0 0 12px}
+.cade-painel p{max-width:62ch;font-size:16px;line-height:1.5;color:var(--theme-elevation-800);opacity:.8;margin:0 0 16px}
+.cade-painel a:not(.cade-painel__card){color:var(--theme-elevation-800);font-weight:600}
+
+.cade-painel__grade{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin:24px 0;
+}
+
+.cade-painel__card{
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;gap:8px;padding:20px;text-decoration:none;
+  background:var(--theme-elevation-0);color:var(--theme-text);
+  border:1px solid var(--theme-elevation-150);border-radius:var(--r-card);
+  transition:transform .2s ease,border-color .2s ease;
+}
+.cade-painel__card::before{
+  content:'';display:block;height:6px;margin:-20px -20px 8px;background:var(--faixa);
+}
+.cade-painel__card strong{font-size:18px;font-weight:700}
+.cade-painel__card span{font-size:15px;line-height:1.4}
+.cade-painel__card--verde{--faixa:var(--verde)}
+.cade-painel__card--ciano{--faixa:var(--ciano)}
+.cade-painel__card--amarelo{--faixa:var(--amarelo)}
+.cade-painel__card--rosa{--faixa:var(--rosa)}
+.cade-painel__card--azul{--faixa:var(--azul)}
+.cade-painel__abrir{margin-top:auto;padding-top:8px;font-weight:700}
+
+.cade-painel__card:hover{
+  border-color:var(--theme-elevation-800);transform:translateY(-2px);
+  background:var(--theme-elevation-0);color:var(--theme-text);
+}
+.cade-painel__card:active{transform:translateY(0)}
+.cade-painel__card:focus-visible{outline:3px solid var(--theme-elevation-800);outline-offset:2px}
+
+.cade-painel__nota{margin-top:0}
+
+@media (prefers-reduced-motion:reduce){
+  .cade-painel__card{transition:border-color .2s ease}
+  .cade-painel__card:hover,.cade-painel__card:active{transform:none}
+}

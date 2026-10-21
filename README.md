@@ -1,193 +1,159 @@
-<p align="center">
-  <img src="assets/logo-cade.svg" alt="CADe UFPel" width="140">
-</p>
+<p align="center"><img src="public/assets/logo-cade.svg" alt="CADe UFPel" width="140"></p>
 
-<h1 align="center">CADe UFPel</h1>
+# CADe UFPel
 
-<p align="center">
-  <a href="https://cadeufpel.com"><img src="https://img.shields.io/website?url=https%3A%2F%2Fcadeufpel.com&label=site&up_message=online" alt="Status do site"></a>
-  <a href="https://vercel.com"><img src="https://img.shields.io/badge/deploy-Vercel-black?logo=vercel" alt="Deploy na Vercel"></a>
-  <img src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white" alt="HTML5">
-  <img src="https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white" alt="CSS3">
-  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black" alt="JavaScript">
-</p>
+Site do Centro Acadêmico de Design da UFPel, migrado do Figma. Next.js 16.4.0 (App Router), React e TypeScript, com o CSS global original e conteúdo editável pelo **Payload CMS** (`/admin`) com login individual por e-mail e senha.
 
-Site do Centro Acadêmico de Design da UFPel, migrado de um design Figma. HTML, CSS e JS puros — sem build, framework ou CDN de JS.
+**Ao vivo:** [cadeufpel.com](https://cadeufpel.com). A migração é desenvolvida na branch `next-cms`; a publicação depende da revisão e do merge em `main`.
 
-**Ao vivo:** [cadeufpel.com](https://cadeufpel.com)
+## Como o conteúdo funciona
 
----
+O painel e o site rodam no **mesmo projeto Next.js**. Todo o texto editável vive no **PostgreSQL**; imagens enviadas vão para o **Vercel Blob**. Ao salvar no painel o cache é invalidado e o site, o Markdown (`/index.md`, `/sobre.md`…), os metadados e `/api/oportunidades` mudam na hora. **Salvar não gera commit no GitHub.** O código (campos, permissões, componentes) continua versionado neste repositório.
 
-## Stack
+Os arquivos `cms/seed/**/*.json` são só a **carga inicial**: `npm run cms:seed` importa esse conteúdo para um banco vazio e não toca em nada que já exista. Depois disso, edite pelo painel, não pelos JSON.
 
-| Camada | Escolha |
-|---|---|
-| HTML/JS | `index.html` (raiz) e páginas secundárias em `paginas/*.html` (`/sobre`, `/contato`, `/privacidade`, `/galeria`), cada um com seu JS no fim do `<body>` (IIFEs separadas, uma por feature). Variantes Markdown públicas em `paginas/*.md` |
-| CSS | dividido em `css/*.css`, carregado via `<link>` no `<head>`, na ordem da cascata |
-| Tipografia | LT Superior, self-hosted em `assets/font/` (`.woff2`) |
-| Ícones | Google Material Symbols, self-hosted em `assets/font/material-symbols.woff2` (subset, ~1KB); logos de marca seguem SVG inline |
-| Backend | `api/enviar.js` — função serverless da Vercel para os formulários; `api/oportunidades.js` — lê a planilha CSV de oportunidades |
+### Gestão: home e /sobre leem da mesma lista
 
-## Estrutura de pastas
+A lista **Membros da gestão** (painel → *Gestão e quem somos*) alimenta o carrossel da home, a seção da página `/sobre` e o `/sobre.md`. Cada membro tem nome, foto, enquadramento, **Cargo** (opcional) e **Faz parte da coordenação**. Quem está marcado aparece em "Coordenação" (foto grande e cargo); os demais, em "Membros". A ordem é a da lista no painel: arraste para reordenar.
 
-```
-api/                  funções serverless (enviar.js, oportunidades.js, 404.js)
-assets/
-  font/               LT Superior self-hosted (.woff2)
-  FotosMembros/       fotos da gestão atual em ASCII/kebab-case (usadas em #o-cade)
-  logo-*.svg, mascote-*.svg, favicon.svg, apple-touch-icon.png, og-image.png
-  produto-*.webp      fotos da lojinha
-  guia-foto.webp      foto do guia do calouro
-css/*.css             ver "Arquivos de estilo"
-paginas/              páginas secundárias HTML e variantes públicas Markdown
-  contato.html, contato.md
-  galeria.html, galeria.md
-  privacidade.html, privacidade.md
-  sobre.html, sobre.md
-  index.md
-index.html            página principal (raiz)
-middleware.js         negociação de conteúdo (Accept: text/markdown)
-test/agentes.test.js  testes de rotas e contratos
-llms.txt, robots.txt, sitemap.xml, vercel.json
+Em `/sobre`, o bloco aparece depois da seção cujo **Estilo** é `Gestão` (painel → *Sobre* → Seções). Em um banco que já existe, o seed não roda de novo: depois de `npm run cms:migrate`, escolha o estilo `Gestão` nessa seção, marque a coordenação e preencha os cargos no painel. Enquanto ninguém estiver marcado, todos aparecem em "Membros".
+
+Estilos de seção nas páginas institucionais (painel → *Sobre*, *Contato* ou *Privacidade* → Seções → Estilo): `Texto` (padrão), `Canais` (lista de contatos com filete rosa), `Lista` (itens `- **Título** — descrição` viram título à esquerda e descrição à direita, sem o travessão) e `Gestão` (acrescenta a coordenação e os membros depois do texto da seção). Em bancos existentes, escolha o estilo no painel depois do `npm run cms:migrate`.
+
+## Desenvolvimento
+
+Requer Node.js **24.x** e um PostgreSQL acessível.
+
+```sh
+npm ci
+cp .env.example .env.local     # ou defina as variáveis abaixo no ambiente
+npm run cms:migrate            # cria as tabelas
+npm run cms:seed               # importa o conteúdo inicial e cria o 1º administrador
+npm run dev
 ```
 
-## Páginas
+Painel: `http://localhost:3000/admin`. Verificação completa:
 
-- `index.html` — página principal (hero, agenda, quem somos, histórico, lojinha, guia do calouro, oportunidades, FAQ, formulários).
-- `paginas/sobre.html` — `/sobre`, quem somos, governança, financiamento e localização.
-- `paginas/contato.html` — `/contato`, canais de atendimento, e-mail e Instagram.
-- `paginas/privacidade.html` — `/privacidade`, política de privacidade e tratamento de dados dos formulários.
-- `paginas/galeria.html` — `/galeria`, histórico e fotos de eventos e gestões anteriores.
-- `paginas/*.md` — representações públicas em Markdown servidas via negociação `Accept: text/markdown` ou acessadas diretamente via `/<nome>.md`.
-- `llms.txt`, `robots.txt`, `sitemap.xml` — SEO, indexação e instruções para agentes.
+```sh
+npm test && npm run typecheck && npm run build && npm start
+```
 
-## Arquivos de estilo
+O `postinstall` aplica uma correção específica ao Next 16.4.0 para preservar o `Vary: Accept` do proxy ([PR #92058](https://github.com/vercel/next.js/pull/92058)); ele falha se a versão ou o template do Next mudar. Reavalie com uma requisição HTTP real antes de atualizar o Next.
 
-| Arquivo | Conteúdo |
-|---|---|
-| `css/base.css` | `@font-face`, tokens `:root`, reset, tipografia, estrutura, botões, focus-visible |
-| `css/nav.css` · `css/hero.css` · `css/agenda.css` | seções 01, 02 e 03 |
-| `css/secoes.css` | 04 quem somos, 05 histórico/galeria, lojinha, 06 guia, 07 oportunidades, 08 FAQ, 09 links, 10 formulários, 11 footer |
-| `css/galeria.css` | layout de `galeria.html` |
-| `css/componentes.css` | faixa de fotos, popup de oportunidade, botão voltar ao topo |
-| `css/icons.css` | `@font-face` do Material Symbols + classes `.m-icon` / `.brand-icon` |
-| `css/responsivo.css` | todas as `@media` (1180, 900, 720, 400, reduced-motion) |
+### Variáveis de ambiente
 
-## Estrutura da home
-
-Quatro `div.area` com fundo próprio, cada uma com uma `.faixa` colorida no topo. Numeração das seções conforme os comentários em `css/*.css`:
-
-| Área | id | Seções |
+| Variável | Obrigatória | Uso |
 |---|---|---|
-| CADe | `#area-cade` | 01 nav, 02 hero, 03 agenda, 04 quem somos (`#o-cade`, com fotos da gestão), 05 histórico/galeria, lojinha |
-| Calouros | `#area-calouros` | 06 guia do calouro (`#guia-calouro`, foto à esquerda + 4 cards) |
-| Dicas | `#area-dicas` | 07 oportunidades (`#oportunidades`), 08 FAQ (`#faq`), 09 links (`#links`) |
-| Formulários | `#area-formularios` | 10 fale com a gente (`#participe`, dois forms) |
+| `DATABASE_URL` | sim | Conexão PostgreSQL |
+| `PAYLOAD_SECRET` | sim | Segredo longo e aleatório (sessões/JWT). Sem valor padrão |
+| `PAYLOAD_PUBLIC_SERVER_URL` | produção | Origem canônica (`https://cadeufpel.com`); defina **só em Production**. No preview da Vercel (`VERCEL_ENV=preview`) é ignorada e vale a `VERCEL_URL`, para que links de e-mail e URLs do admin apontem para o próprio preview. Em dev, `http://localhost:3000` |
+| `BLOB_READ_WRITE_TOKEN` | produção | Armazenamento de imagens. Sem ele, o upload falha em produção |
+| `CMS_ADMIN_EMAIL`, `CMS_ADMIN_PASSWORD` | só no seed | Primeiro administrador. Sem padrões; o seed nunca altera uma conta existente |
+| `CMS_UPLOAD_LOCAL` | dev | `true` grava imagens em `cms/media-local/` (ignorado pelo Git e proibido em produção) |
+| `RESEND_API_KEY` | produção | Chave do Resend: formulários (`/api/enviar`) e e-mails do CMS (recuperação de senha). Em produção o boot falha sem ela |
+| `CMS_EMAIL_REMETENTE` | produção | Remetente **verificado no Resend** dos e-mails do CMS (ex.: `cms@cadeufpel.com`). Em produção o boot falha sem ele |
+| `RESEND_TO`, `RESEND_FROM` | não | Destinatário (padrão `cadesignufpel@gmail.com`) e remetente (padrão `CADe UFPel <naoresponda@cadeufpel.com>`) dos formulários |
+| `CMS_VERIFICACAO_EMAIL` | não | `true` exige verificação de e-mail em novas contas (por padrão as contas são criadas por um administrador) |
 
-11 (`css/secoes.css`) é o footer, fora das `.area`.
+### Formulários (`/api/enviar`)
 
-A nav marca a área ativa via `aria-current="page"`, calculada por listener de scroll.
-
-## Formulário de contato
-
-`api/enviar.js` recebe os dois formulários do site e envia por e-mail via Resend. Env vars (Vercel → Project → Settings → Environment Variables):
-
-| Variável | Obrigatória | Padrão |
-|---|---|---|
-| `RESEND_API_KEY` | sim | — (nunca commitar) |
-| `RESEND_TO` | não | `cadesignufpel@gmail.com` |
-| `RESEND_FROM` | não | `CADe UFPel <onboarding@resend.dev>` (sandbox — trocar para domínio verificado) |
-
-## Publicar uma oportunidade
-
-Os cards de `#oportunidades` vêm da planilha Google publicada em CSV; não edite
-cards no `index.html`. O link da planilha é a URL configurada em
-`SHEET_OPORTUNIDADES_CSV` no painel da Vercel. Para abrir a planilha, copie essa
-URL ou use o link compartilhado pela gestão.
-
-| Coluna | Regra |
+| Proteção | Comportamento |
 |---|---|
-| `publicado` | Só `sim`, `s`, `x`, `true` ou `1` publica a linha. |
-| `tag` | Pílula do card; vazio vira `OPORTUNIDADE`. |
-| `cor` | `verde`, `amarelo` ou `ciano`; inválida vira `verde`. |
-| `titulo` | Obrigatório; vazio ignora a linha. |
-| `resumo` | Linha opcional do card. |
-| `texto` | Texto do popup; vazio usa o resumo. |
-| `cta` | Rótulo do botão do popup; vazio usa `Quero essa oportunidade`. |
-| `link` | URL `http://`, `https://` ou `mailto:`; inválida abre o Instagram. |
-| `expira` | `AAAA-MM-DD` ou `DD/MM/AAAA`; some depois desse dia. |
+| Origem | Só aceita POST com `Origin` ou `Referer` do mesmo host; senão 403. Barreira leve: um script pode forjar o cabeçalho |
+| Tamanho | Corpo acima de 20.000 caracteres dá 413, checado pelo `Content-Length` e também pelo corpo já lido (cobre POST sem `Content-Length`) |
+| Campos | Limites: nome 120, e-mail 254, semestre 40, área 200, tipo 30, assunto 150, mensagem 5.000, contato 200. Excesso, tipo errado ou e-mail inválido dão 400. Os `maxLength` de `components/Formularios.tsx` espelham esses valores |
+| Taxa | 5 envios por IP a cada 10 minutos; o 6º dá 429 com `Retry-After`. Contador em memória por instância serverless: freia abuso simples, não um ataque distribuído. Para isso, configure uma regra de rate limit no Firewall da Vercel para `/api/enviar` |
+| Honeypot | Campo `empresa` preenchido finge sucesso e não envia |
+| Saída | Todos os campos passam por `escapeHtml`; quebras de linha são removidas do assunto |
 
-Na Vercel, configure `SHEET_OPORTUNIDADES_CSV` em **Project → Settings →
-Environment Variables**, com a URL CSV de **Arquivo → Compartilhar → Publicar na
-web** da aba. Marque Production e Preview. A atualização pode levar até 5 minutos
-para aparecer no site por causa do cache do CDN.
+Os testes estão em `test/api-enviar.test.ts`.
 
-## Rodando local
+### Chaves públicas do Google
+
+A home e `/galeria` carregam Agenda (Calendar) e galeria (Drive) direto do navegador com uma chave `AIzaSy…`, visível a qualquer visitante. No Google Cloud Console, mantenha essa chave restrita a referenciadores `cadeufpel.com/*` e `www.cadeufpel.com/*` e apenas às APIs Calendar e Drive. Se ela vazar sem restrição, gere outra.
+
+## Acesso e permissões
+
+- Login **individual** por e-mail e senha (sessões revogáveis, cookie `HttpOnly`, bloqueio de 15 min após 5 falhas, JWT fora do corpo das respostas). Sem GitHub, Google ou tokens compartilhados.
+- **Não existe cadastro público.** Só administradores criam usuários, no painel (Acesso → Usuários).
+- **Administrador:** edita conteúdo, gerencia usuários, papéis e ativação.
+- **Editor:** edita conteúdo e mídia e o próprio perfil; não vê outros usuários, não promove papel, não cria contas.
+- Desativar um usuário derruba as sessões e bloqueia novo login. Conteúdo e imagens públicas são de leitura aberta; qualquer escrita exige conta ativa.
+- **Recuperação de senha:** o link "Esqueceu a senha?" envia um e-mail pelo Resend (válido por 1 h, um pedido por minuto). Por isso `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` são obrigatórios em produção; sem eles o link não funcionaria. Em desenvolvimento sem chave, o envio falha de forma explícita.
+- Uploads: PNG, JPEG ou WebP, até **4 MiB**, nome em `kebab-case`, convertidos para WebP e limitados a 2048 × 2048. SVG é recusado. Todo upload passa pelo servidor (validação e conversão); as imagens são servidas por URL direta do Blob. **Limite da plataforma:** a Vercel rejeita corpos de requisição acima de ~4,5 MB (HTTP 413) antes de o Payload rodar. Entre 4 MiB e ~4,5 MB o painel mostra a nossa mensagem clara; acima disso o erro é genérico. Fotos de celular costumam passar disso: reduza ou exporte em WebP antes de enviar.
+
+## Estrutura
+
+| Caminho | Responsabilidade |
+|---|---|
+| `app/(site)/` | Site público: home, `/sobre`, `/contato`, `/privacidade`, `/galeria`, Markdown, `llms.txt`, APIs públicas |
+| `app/(payload)/` | Painel `/admin` e REST do CMS em `/api/cms` (layout raiz isolado) |
+| `app/global-not-found.tsx` | 404 do site (HTML; Markdown para clientes programáticos via `proxy.ts`) |
+| `components/` | Markup React portado do site original |
+| `app/styles/` | CSS global na ordem original da cascata |
+| `payload.config.ts`, `cms/` | Configuração, 21 globais estruturadas, usuários, mídia, acesso, seed, migrações |
+| `cms/seed/` | Carga inicial (somente leitura pelo seed) |
+| `cms/migrations/` | Migrações do PostgreSQL (versionadas) |
+| `lib/conteudo.ts` | Lê as globais no banco, valida e projeta para o contrato público; cache com tag `conteudo-cade` |
+| `lib/md-paginas.ts`, `lib/seo.ts` | Markdown para agentes e SEO gerados do mesmo conteúdo |
+| `proxy.ts`, `next.config.ts`, `vercel.json` | Negociação de `Accept`, redirects, headers e preset Next.js |
+| `public/assets/` | Fontes, marca e imagens estáticas |
+| `test/` | Contratos públicos, autorização, mídia, seed e projeção (Vitest) |
+
+Google Calendar e Drive continuam sendo consultados no navegador com a chave pública já restrita por referenciador.
+
+## Oportunidades
+
+Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `cor`, `resumo`, `texto`, `cta`, `link` e `expira` (data inclusiva, dia de São Paulo; vazio não expira). A resposta pública (`/api/oportunidades`) lista até 12 itens publicados e vigentes.
+
+## Publicação — ações do dono do projeto
+
+1. **Banco:** crie um PostgreSQL (por exemplo Neon, pela Vercel Marketplace) e defina `DATABASE_URL`.
+2. **Blob:** crie um Vercel Blob **público** (Access: Public; um store privado faz todo upload falhar com "Cannot use public access on a private store", e o acesso não pode ser mudado depois) e conecte-o ao projeto com **token estático**, que define `BLOB_READ_WRITE_TOKEN`. Pela CLI: `vercel blob create-store cade-blob-public --access public --region gru1`, e se a conexão cair no modo OIDC, `vercel storage update <store_id> --auth token --add-rw-token`. A conexão não pode coexistir com um `BLOB_READ_WRITE_TOKEN` antigo no mesmo ambiente: remova o antigo antes.
+3. **Variáveis na Vercel**: `DATABASE_URL`, `PAYLOAD_SECRET` (aleatório, ≥ 32 caracteres; valor diferente em cada ambiente), `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` (remetente de um domínio verificado no Resend), em Production e Preview; `PAYLOAD_PUBLIC_SERVER_URL=https://cadeufpel.com` **só em Production**; mais `RESEND_TO`/`RESEND_FROM` se quiser mudar os padrões. O build falha em produção sem `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE`, e sem `PAYLOAD_PUBLIC_SERVER_URL` fora do preview. Remova `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET`, se existirem. **Só depois do merge** remova `SHEET_OPORTUNIDADES_CSV`: o site atual ainda a usa.
+4. **Esquema e conteúdo iniciais**, uma vez, contra o banco de produção. Use **Node 24** (`engines.node` é `24.x`; confira com `node -v`): os comandos `cms:*` só foram verificados nele. Eles carregam a configuração do Payload, então leem um `.env.local` (Git ignorado; apague-o depois). **Não defina `NODE_ENV=production`** no shell: em produção o boot exige também `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE`.
+   - **Só a migração** (`npm run cms:migrate`) precisa apenas de `DATABASE_URL` (o **de produção**, copiado do painel do provedor) e `PAYLOAD_SECRET` (qualquer valor com ≥ 32 caracteres; o comando não assina sessões). Não precisa do token do Blob: sem ele o plugin fica desligado e o esquema é o mesmo (`alwaysInsertFields`). Foi assim que foi testada.
+   - **O seed** (`npm run cms:seed`, só em banco vazio) precisa também de `PAYLOAD_PUBLIC_SERVER_URL` e de `BLOB_READ_WRITE_TOKEN` (o **do Blob de produção**, copiado de Storage → Blob → `.env.local` no painel). Ele envia as imagens iniciais ao Blob; sem o token se recusa a rodar, porque gravaria imagens no banco sem arquivo (e uma segunda execução não corrige, pois pula imagens já cadastradas).
+   
+   Não use `vercel env pull` para obter essas variáveis: as do tipo Secret/Sensitive não são baixadas.
+   ```sh
+   npm run cms:migrate
+   ```
+   Depois crie o primeiro administrador. O comando pergunta o e-mail e a senha, para não haver valor de exemplo a colar e a senha não ficar no histórico do shell. Use um e-mail que você abre (ele recebe a recuperação de senha) e uma senha longa e única. No bash:
+   ```sh
+   read -rp 'E-mail: ' CMS_ADMIN_EMAIL; read -rsp 'Senha: ' CMS_ADMIN_PASSWORD; echo; export CMS_ADMIN_EMAIL CMS_ADMIN_PASSWORD; npm run cms:seed; unset CMS_ADMIN_EMAIL CMS_ADMIN_PASSWORD
+   ```
+   No PowerShell:
+   ```powershell
+   $env:CMS_ADMIN_EMAIL = Read-Host 'E-mail'; $env:CMS_ADMIN_PASSWORD = Read-Host 'Senha' -MaskInput; npm run cms:seed; Remove-Item Env:CMS_ADMIN_EMAIL, Env:CMS_ADMIN_PASSWORD
+   ```
+   Confirme que o `DATABASE_URL` do `.env.local` é o do banco de produção antes de rodar. Depois do seed, abra Mídias no painel e confirme que a URL de uma imagem aponta para `*.public.blob.vercel-storage.com`. Troque a senha no primeiro acesso e crie os editores em Acesso → Usuários.
+5. Abra o PR `next-cms` → `main` e **valide no preview o que não foi possível testar localmente** (precisa do Blob e do Resend reais):
+   - Upload de um PNG grande: deve virar WebP ≤ 2048 px, e a URL da imagem salva deve apontar direto para `*.public.blob.vercel-storage.com`.
+   - Um nome de arquivo fora do padrão deve ser recusado com mensagem clara. Teste **dois** tamanhos: um arquivo de ~4,2 MB (deve mostrar a mensagem de limite) e um de 6 MB ou mais (a Vercel rejeita com 413; anote o que o painel mostra).
+   - "Esqueceu a senha?": o e-mail chega, o link redefine a senha e o login seguinte funciona.
+   - Login de um editor de teste: edita conteúdo, mas não cria usuário nem altera papel.
+6. **Antes do merge**, rode `npm run cms:migrate` de novo contra o banco de produção (mesmo ambiente do passo 4). A migração `disponibilidade` adiciona três colunas à global de formulários e preenche os textos; o site publicado sem ela não consegue ler essa global e a home falha. Ela é segura com a linha já existente e pode ser repetida (migrações aplicadas são puladas). Preview e produção dividem o banco, então o preview atual continua funcionando depois dela.
+   A migração `gestao_cargo_lista` também precisa rodar **antes** do merge: ela adiciona `cargo` e `coordenacao` aos membros da gestão e os estilos `Gestão` e `Lista` das seções. O código novo consulta essas colunas, então sem a migração a leitura dos membros deve falhar (como ocorre com a `disponibilidade`). Em um banco que já tinha conteúdo, depois dela escolha no painel o estilo `Lista` na seção "O que fazemos" e `Gestão` na seção da gestão (em `/sobre`), e marque a coordenação e os cargos em *Gestão e quem somos*. Em um banco novo, o seed já cria tudo com esses estilos.
+7. Depois da validação, faça o merge.
+8. Em mudanças futuras de campos, gere e versione uma migração (`npm run cms:migrate:create`) e rode `npm run cms:migrate` antes de publicar. Em coluna `NOT NULL` nova de uma global que já tem linha, a migração precisa adicionar a coluna nulável, preencher e só então exigir `NOT NULL` (veja `cms/migrations/*_disponibilidade.ts`).
+
+O `vercel.json` seleciona o preset `nextjs`. Hosts e aliases antigos continuam redirecionando para o domínio canônico sem `www`.
+
+## Verificação
+
+A suíte cobre negociação, oportunidades, redirects, SEO e Markdown, formulários, autorização (anônimo, editor, administrador, conta desativada), regras de mídia, idempotência do seed e projeção do conteúdo. Complete com requisições reais ao build (`npm start`):
 
 ```sh
-npx vercel dev
+curl -i -H "Accept: text/markdown" http://localhost:3000/sobre
+curl -I -H "Accept: text/html" http://localhost:3000/sobre
+curl -i http://localhost:3000/nao-existe
 ```
 
-Para testar o roteamento completo da Vercel (rewrites para `paginas/`, negociação Markdown via `middleware.js` e funções da `api/`). Para visualização puramente estática, também é possível usar `npx serve`.
+HTML deve conter `Vary: Accept`, link alternativo Markdown e ajuda para agentes; caminho inexistente retorna 404. Confira 1180, 900, 720, 400 e 390 px sem overflow horizontal.
 
-## Deploy
+## Contribuição e CodeGraph
 
-Hospedado na **Vercel**, deploy automático a cada push em `main`. `vercel.json` define:
+Leia `AGENTS.md`. A copy oficial vem do Figma; use os tokens, Material Symbols por codepoint e identificadores estáveis. Não adicione analytics, pixels, beacons ou scripts externos de telemetria (o Payload está com `telemetry: false`).
 
-- `cleanUrls` — URLs públicas limpas sem `.html`.
-- `rewrites` — roteamento transparente das URLs públicas para os arquivos correspondentes em `paginas/` e catch-all para `/api/404`.
-- `redirects` — redirecionamentos permanentes (308) de URLs legadas `.html` para URLs limpas, aliases em inglês e redirecionamento de hosts/domínios para o apex `cadeufpel.com`.
-- `Cache-Control` imutável (`max-age=31536000, immutable`) para as fontes em `assets/font/`.
-- `X-Content-Type-Options: nosniff`, `Vary: Accept` e links `rel="alternate"` para Markdown.
-
-## Contribuindo
-
-Antes de alterar, leia o [`AGENTS.md`](AGENTS.md) — convenções do projeto: tokens em `:root`, ids `data-od-id`, breakpoints (1180px, 900px, 720px, 400px), regras de ícones e de hover/focus-visible. A copy oficial vem do Figma e não deve ser inventada.
-
-## CodeGraph para agentes
-
-O escopo versionado do grafo está em [`codegraph.config.json`](codegraph.config.json).
-Ele inclui HTML, CSS, JavaScript (inclusive `api/` e `test/`) e Markdown, mas exclui
-`assets/`, fontes, imagens, binários, `.env*`, caches e saídas locais. Arquivos de
-rota (`vercel.json`, `robots.txt` e `sitemap.xml`) são lidos ao vivo quando
-necessário; não fazem parte das extensões descobertas. O `.gitignore` continua valendo.
-
-O comando disponível no ambiente deve ser verificado antes de qualquer consulta:
-
-```sh
-codegraph version
-codegraph --help
-```
-
-Na CLI legada (1.6.0), a consulta usa `--path`:
-
-```sh
-codegraph status .
-codegraph files --path . --format tree --max-depth 3
-codegraph query "preferMarkdown" --path . --json
-codegraph explore "formulários index api enviar Resend" --path . --max-files 4
-```
-
-As consultas estruturais da CLI legada pressupõem índice já criado; sem uma
-indexação autorizada, limite-se a `version`/`help` e à leitura direta dos arquivos.
-
-Não execute `init`/`index` em uma tarefa somente de leitura: eles criam ou
-atualizam `.codegraph/`. A configuração `codegraph.config.json` só é aplicada
-por versões que a anunciam na ajuda; a CLI legada acima ignora esse arquivo.
-Após atualização para uma versão compatível, use `--root .` e consultas como
-`codegraph orient --root . --budget small --json`, `codegraph links --root . --json`,
-`codegraph unresolved --root . --json` e `codegraph deps api/enviar.js --root . --json`.
-
-Para Codex e Claude Code, a configuração MCP pertence ao ambiente do agente,
-não ao deploy deste site. Sem gravar configurações externas, pré-visualize:
-
-```sh
-codegraph install --print-config codex
-codegraph install --print-config claude
-codegraph install --target codex,claude --dry-run
-```
-
-Use MCP por stdio somente após confirmar a versão compatível e reinicie o
-cliente depois de instalar/atualizar o CodeGraph. Não exponha um servidor do
-grafo em uma porta pública. Ao interpretar respostas, confira `analysis`/
-`freshness` e trate `reduced`, `mixed` ou `stale` como evidência limitada.
+`codegraph.config.json` inclui HTML, CSS, JavaScript, TypeScript/TSX e Markdown, excluindo assets, `.next/`, dependências, mídia local, migrações, segredos e scratch. Confirme `codegraph version` e `codegraph --help` antes de consultar; use somente leitura e verifique `analysis`/`freshness`. A configuração MCP é do ambiente do agente.
