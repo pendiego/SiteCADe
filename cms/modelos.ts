@@ -232,6 +232,10 @@ export const modelos: ModeloConteudo[] = [
         texto('titulo', 'Título'),
         longo('texto', 'Texto'),
         texto('gestaoTitulo', 'Título da gestão'),
+        comDica(texto('contagemRotulo', 'Texto depois do número de pessoas', false), 'Ex.: "17 pessoas". Vazio usa "pessoas".'),
+        comDica(texto('linkSobreRotulo', 'Texto do botão para a página Sobre', false), 'Vazio usa "Conheça o CADe UFPel".'),
+        comDica(texto('equipeCoordenacaoTitulo', 'Título da coordenação (página Sobre)', false), 'Vazio usa "Coordenação".'),
+        comDica(texto('equipeMembrosTitulo', 'Título dos demais membros (página Sobre)', false), 'Vazio usa "Membros".'),
       ]),
       lista('membros', 'Membros da gestão', 'Membro', [
         texto('nome', 'Nome'),

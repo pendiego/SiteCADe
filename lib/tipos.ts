@@ -93,6 +93,10 @@ export interface InicioQuemSomos {
   titulo: string;
   texto: string;
   gestaoTitulo: string;
+  contagemRotulo: string;
+  linkSobreRotulo: string;
+  equipeCoordenacaoTitulo: string;
+  equipeMembrosTitulo: string;
   membros: Membro[];
 }
 

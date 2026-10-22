@@ -1,4 +1,9 @@
-import type { Membro } from '@/lib/tipos';
+import type { InicioQuemSomos, Membro } from '@/lib/tipos';
+
+// Títulos editáveis no painel; vazio mantém o texto original.
+export function titulosEquipe(q: InicioQuemSomos): { coordenacao: string; membros: string } {
+  return { coordenacao: q.equipeCoordenacaoTitulo || 'Coordenação', membros: q.equipeMembrosTitulo || 'Membros' };
+}
 
 // Separa a coordenação (marcada no CMS) dos demais membros, mantendo a ordem da lista do painel.
 export function dividirEquipe(membros: Membro[]): { coordenacao: Membro[]; demais: Membro[] } {
@@ -9,19 +14,20 @@ export function dividirEquipe(membros: Membro[]): { coordenacao: Membro[]; demai
 }
 
 // Versão em Markdown da equipe, para /sobre.md (agentes).
-export function equipeMd(membros: Membro[]): string {
-  const { coordenacao, demais } = dividirEquipe(membros);
+export function equipeMd(q: InicioQuemSomos): string {
+  const titulos = titulosEquipe(q);
+  const { coordenacao, demais } = dividirEquipe(q.membros);
   const partes: string[] = [];
   if (coordenacao.length) {
     partes.push(
-      '### Coordenação',
+      `### ${titulos.coordenacao}`,
       '',
       ...coordenacao.map((m) => (m.cargo ? `- **${m.nome}** — ${m.cargo}` : `- **${m.nome}**`)),
     );
   }
   if (demais.length) {
     if (partes.length) partes.push('');
-    partes.push('### Membros', '', demais.map((m) => m.nome).join(', ') + '.');
+    partes.push(`### ${titulos.membros}`, '', demais.map((m) => m.nome).join(', ') + '.');
   }
   return partes.join('\n');
 }

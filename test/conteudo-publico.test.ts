@@ -97,6 +97,26 @@ describe('markdown de páginas (lib/md-paginas)', () => {
     expect(texto).toContain('### Membros');
   });
 
+  it('mdInstitucional(sobre) usa os títulos de equipe editados no painel; vazio volta ao padrão', async () => {
+    estado.conteudo = {
+      ...base,
+      quemSomos: { ...base.quemSomos, equipeCoordenacaoTitulo: 'Diretoria', equipeMembrosTitulo: 'Equipe' },
+    };
+    const editado = await md.mdInstitucional('sobre');
+    expect(editado).toContain('### Diretoria');
+    expect(editado).toContain('### Equipe');
+    expect(editado).not.toContain('### Coordenação');
+    expect(editado).not.toContain('### Membros');
+
+    estado.conteudo = {
+      ...base,
+      quemSomos: { ...base.quemSomos, equipeCoordenacaoTitulo: '', equipeMembrosTitulo: '' },
+    };
+    const vazio = await md.mdInstitucional('sobre');
+    expect(vazio).toContain('### Coordenação');
+    expect(vazio).toContain('### Membros');
+  });
+
   it('mdInicio lista só oportunidades publicadas e vigentes', async () => {
     estado.conteudo = {
       ...base,
@@ -171,5 +191,50 @@ describe('SEO (lib/seo)', () => {
     expect(canonical.href.startsWith('https://cadeufpel.com/')).toBe(true);
     expect(canonical.href).not.toContain('www.');
     expect(meta.alternates?.types?.['text/markdown']).toBe('/sobre.md');
+  });
+});
+
+describe('JSON-LD segue o conteúdo editável', () => {
+  function comPaginas(titulos: Partial<Record<'sobre' | 'contato' | 'privacidade', string>>, galeria?: string) {
+    const paginas = { ...base.paginas };
+    for (const [chave, titulo] of Object.entries(titulos)) {
+      const k = chave as 'sobre' | 'contato' | 'privacidade';
+      paginas[k] = { ...paginas[k], seo: { ...paginas[k].seo, titulo: titulo as string } };
+    }
+    estado.conteudo = {
+      ...base,
+      paginas,
+      galeria: galeria ? { ...base.galeria, seo: { ...base.galeria.seo, titulo: galeria } } : base.galeria,
+    };
+  }
+
+  it('o nome de cada página vem do título de SEO do painel', async () => {
+    comPaginas(
+      { sobre: 'Sobre X', contato: 'Contato X', privacidade: 'Privacidade X' },
+      'Galeria X',
+    );
+    expect((await seo.ldSobre()).name).toBe('Sobre X');
+    expect((await seo.ldContato()).name).toBe('Contato X');
+    expect((await seo.ldPrivacidade()).name).toBe('Privacidade X');
+    expect((await seo.ldGaleria()).name).toBe('Galeria X');
+    const migalhas = await seo.ldMigalhasSobre();
+    expect(migalhas.itemListElement[1].name).toBe('Sobre X');
+  });
+
+  it('o endereço por extenso do painel vai para o PostalAddress de todas as páginas', async () => {
+    estado.conteudo = { ...base, site: { ...base.site, endereco: { ...base.site.endereco, texto: 'Rua Teste, 1' } } };
+    const nomes: unknown[] = [];
+    const coletar = (no: unknown): void => {
+      if (Array.isArray(no)) return no.forEach(coletar);
+      if (!no || typeof no !== 'object') return;
+      const o = no as Record<string, unknown>;
+      if (o['@type'] === 'PostalAddress') nomes.push(o.name);
+      Object.values(o).forEach(coletar);
+    };
+    for (const gerar of [seo.ldInicio, seo.ldSobre, seo.ldContato, seo.ldPrivacidade, seo.ldGaleria]) {
+      coletar(await gerar());
+    }
+    expect(nomes).toHaveLength(5);
+    expect(new Set(nomes)).toEqual(new Set(['Rua Teste, 1']));
   });
 });
