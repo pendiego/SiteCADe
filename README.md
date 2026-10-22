@@ -4,7 +4,7 @@
 
 Site do Centro Acadêmico de Design da UFPel, migrado do Figma. Next.js 16.4.0 (App Router), React e TypeScript, com o CSS global original e conteúdo editável pelo **Payload CMS** (`/admin`) com login individual por e-mail e senha.
 
-**Ao vivo:** [cadeufpel.com](https://cadeufpel.com). A migração é desenvolvida na branch `next-cms`; a publicação depende da revisão e do merge em `main`.
+**Ao vivo:** [cadeufpel.com](https://cadeufpel.com), publicado a partir da `main` (cada merge publica em produção).
 
 ## Como o conteúdo funciona
 
@@ -14,7 +14,7 @@ Os arquivos `cms/seed/**/*.json` são só a **carga inicial**: `npm run cms:seed
 
 ### Gestão: home e /sobre leem da mesma lista
 
-A lista **Membros da gestão** (painel → *Gestão e quem somos*) alimenta o carrossel da home, a seção da página `/sobre` e o `/sobre.md`. Cada membro tem nome, foto, enquadramento, **Cargo** (opcional) e **Faz parte da coordenação**. Quem está marcado aparece em "Coordenação" (foto grande e cargo); os demais, em "Membros". A ordem é a da lista no painel: arraste para reordenar.
+A lista **Membros da gestão** (painel → *Gestão e quem somos*) alimenta o carrossel da home, a seção da página `/sobre` e o `/sobre.md`. Cada membro tem nome, foto, enquadramento, **Cargo** (opcional) e **Faz parte da coordenação**. Quem está marcado aparece em "Coordenação" (foto grande e cargo); os demais, em "Membros". A ordem é a da lista no painel: arraste para reordenar. Os textos "pessoas" (após a contagem), o botão para `/sobre` e os títulos "Coordenação" e "Membros" também são campos dessa tela; vazio mantém o padrão.
 
 Em `/sobre`, o bloco aparece depois da seção cujo **Estilo** é `Gestão` (painel → *Sobre* → Seções). Em um banco que já existe, o seed não roda de novo: depois de `npm run cms:migrate`, escolha o estilo `Gestão` nessa seção, marque a coordenação e preencha os cargos no painel. Enquanto ninguém estiver marcado, todos aparecem em "Membros".
 
@@ -110,7 +110,7 @@ Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `
 
 1. **Banco:** crie um PostgreSQL (por exemplo Neon, pela Vercel Marketplace) e defina `DATABASE_URL`.
 2. **Blob:** crie um Vercel Blob **público** (Access: Public; um store privado faz todo upload falhar com "Cannot use public access on a private store", e o acesso não pode ser mudado depois) e conecte-o ao projeto com **token estático**, que define `BLOB_READ_WRITE_TOKEN`. Pela CLI: `vercel blob create-store cade-blob-public --access public --region gru1`, e se a conexão cair no modo OIDC, `vercel storage update <store_id> --auth token --add-rw-token`. A conexão não pode coexistir com um `BLOB_READ_WRITE_TOKEN` antigo no mesmo ambiente: remova o antigo antes.
-3. **Variáveis na Vercel**: `DATABASE_URL`, `PAYLOAD_SECRET` (aleatório, ≥ 32 caracteres; valor diferente em cada ambiente), `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` (remetente de um domínio verificado no Resend), em Production e Preview; `PAYLOAD_PUBLIC_SERVER_URL=https://cadeufpel.com` **só em Production**; mais `RESEND_TO`/`RESEND_FROM` se quiser mudar os padrões. O build falha em produção sem `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE`, e sem `PAYLOAD_PUBLIC_SERVER_URL` fora do preview. Remova `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET`, se existirem. **Só depois do merge** remova `SHEET_OPORTUNIDADES_CSV`: o site atual ainda a usa.
+3. **Variáveis na Vercel**: `DATABASE_URL`, `PAYLOAD_SECRET` (aleatório, ≥ 32 caracteres; valor diferente em cada ambiente), `BLOB_READ_WRITE_TOKEN`, `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE` (remetente de um domínio verificado no Resend), em Production e Preview; `PAYLOAD_PUBLIC_SERVER_URL=https://cadeufpel.com` **só em Production**; mais `RESEND_TO`/`RESEND_FROM` se quiser mudar os padrões. O build falha em produção sem `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE`, e sem `PAYLOAD_PUBLIC_SERVER_URL` fora do preview. Remova `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` e `SHEET_OPORTUNIDADES_CSV`, se existirem (o site antigo usava a planilha; este não).
 4. **Esquema e conteúdo iniciais**, uma vez, contra o banco de produção. Use **Node 24** (`engines.node` é `24.x`; confira com `node -v`): os comandos `cms:*` só foram verificados nele. Eles carregam a configuração do Payload, então leem um `.env.local` (Git ignorado; apague-o depois). **Não defina `NODE_ENV=production`** no shell: em produção o boot exige também `RESEND_API_KEY` e `CMS_EMAIL_REMETENTE`.
    - **Só a migração** (`npm run cms:migrate`) precisa apenas de `DATABASE_URL` (o **de produção**, copiado do painel do provedor) e `PAYLOAD_SECRET` (qualquer valor com ≥ 32 caracteres; o comando não assina sessões). Não precisa do token do Blob: sem ele o plugin fica desligado e o esquema é o mesmo (`alwaysInsertFields`). Foi assim que foi testada.
    - **O seed** (`npm run cms:seed`, só em banco vazio) precisa também de `PAYLOAD_PUBLIC_SERVER_URL` e de `BLOB_READ_WRITE_TOKEN` (o **do Blob de produção**, copiado de Storage → Blob → `.env.local` no painel). Ele envia as imagens iniciais ao Blob; sem o token se recusa a rodar, porque gravaria imagens no banco sem arquivo (e uma segunda execução não corrige, pois pula imagens já cadastradas).
@@ -128,15 +128,22 @@ Edite **Oportunidades** no painel. Cada item tem `publicado`, `titulo`, `tag`, `
    $env:CMS_ADMIN_EMAIL = Read-Host 'E-mail'; $env:CMS_ADMIN_PASSWORD = Read-Host 'Senha' -MaskInput; npm run cms:seed; Remove-Item Env:CMS_ADMIN_EMAIL, Env:CMS_ADMIN_PASSWORD
    ```
    Confirme que o `DATABASE_URL` do `.env.local` é o do banco de produção antes de rodar. Depois do seed, abra Mídias no painel e confirme que a URL de uma imagem aponta para `*.public.blob.vercel-storage.com`. Troque a senha no primeiro acesso e crie os editores em Acesso → Usuários.
-5. Abra o PR `next-cms` → `main` e **valide no preview o que não foi possível testar localmente** (precisa do Blob e do Resend reais):
+5. **Validação no preview** do que não dá para testar localmente (precisa do Blob e do Resend reais):
    - Upload de um PNG grande: deve virar WebP ≤ 2048 px, e a URL da imagem salva deve apontar direto para `*.public.blob.vercel-storage.com`.
    - Um nome de arquivo fora do padrão deve ser recusado com mensagem clara. Teste **dois** tamanhos: um arquivo de ~4,2 MB (deve mostrar a mensagem de limite) e um de 6 MB ou mais (a Vercel rejeita com 413; anote o que o painel mostra).
    - "Esqueceu a senha?": o e-mail chega, o link redefine a senha e o login seguinte funciona.
    - Login de um editor de teste: edita conteúdo, mas não cria usuário nem altera papel.
-6. **Antes do merge**, rode `npm run cms:migrate` de novo contra o banco de produção (mesmo ambiente do passo 4). A migração `disponibilidade` adiciona três colunas à global de formulários e preenche os textos; o site publicado sem ela não consegue ler essa global e a home falha. Ela é segura com a linha já existente e pode ser repetida (migrações aplicadas são puladas). Preview e produção dividem o banco, então o preview atual continua funcionando depois dela.
-   A migração `gestao_cargo_lista` também precisa rodar **antes** do merge: ela adiciona `cargo` e `coordenacao` aos membros da gestão e os estilos `Gestão` e `Lista` das seções. O código novo consulta essas colunas, então sem a migração a leitura dos membros deve falhar (como ocorre com a `disponibilidade`). Em um banco que já tinha conteúdo, depois dela escolha no painel o estilo `Lista` na seção "O que fazemos" e `Gestão` na seção da gestão (em `/sobre`), e marque a coordenação e os cargos em *Gestão e quem somos*. Em um banco novo, o seed já cria tudo com esses estilos.
-7. Depois da validação, faça o merge.
-8. Em mudanças futuras de campos, gere e versione uma migração (`npm run cms:migrate:create`) e rode `npm run cms:migrate` antes de publicar. Em coluna `NOT NULL` nova de uma global que já tem linha, a migração precisa adicionar a coluna nulável, preencher e só então exigir `NOT NULL` (veja `cms/migrations/*_disponibilidade.ts`).
+
+### Mudanças de campos e migrações
+
+A `main` é publicada em produção a cada merge. Preview e produção **dividem o mesmo banco**: código novo contra um esquema antigo derruba todas as rotas (`column ... does not exist`). Por isso:
+
+1. Gere a migração junto com a mudança do campo (`npm run cms:migrate:create`), versione-a e rode `npm run cms:types`.
+2. **Antes do merge**, confira o estado com `npx payload migrate:status` e aplique com `npm run cms:migrate` contra o banco de produção (mesmo ambiente e `.env.local` do passo 4). Migrações já aplicadas são puladas. Migração que só adiciona colunas nuláveis ou valores de enum é compatível com o código antigo, então rodá-la antes não quebra o site no ar.
+3. Em coluna `NOT NULL` nova de uma global que já tem linha, adicione a coluna nulável, preencha e só então exija `NOT NULL` (veja `cms/migrations/*_disponibilidade.ts`).
+4. O `down` gerado pelo Payload faz cast direto de enum: ao reverter valores novos, converta antes (veja `*_gestao_cargo_lista.ts`).
+
+Migrações existentes: `inicial`, `disponibilidade`, `foto_perfil`, `gestao_cargo_lista` (cargo/coordenação dos membros e estilos `Gestão`/`Lista`) e `rotulos_quem_somos` (rótulos editáveis da gestão). Em bancos que já tinham conteúdo, depois de migrar escolha no painel o estilo `Lista` em "O que fazemos" e `Gestão` na seção da gestão (`/sobre`), e marque a coordenação e os cargos. Em um banco novo, o seed já cria tudo com esses estilos.
 
 O `vercel.json` seleciona o preset `nextjs`. Hosts e aliases antigos continuam redirecionando para o domínio canônico sem `www`.
 
