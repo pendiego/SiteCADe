@@ -8,6 +8,7 @@ const EMAIL_COORDENACAO = 'design.ufpel@gmail.com';
 function endereco(site: Site) {
   return {
     '@type': 'PostalAddress',
+    name: site.endereco.texto,
     streetAddress: site.endereco.rua,
     addressLocality: site.endereco.cidade,
     addressRegion: site.endereco.uf,
@@ -94,13 +95,13 @@ export async function ldInicio() {
 }
 
 export async function ldSobre() {
-  const { site } = await getConteudo();
+  const { site, paginas } = await getConteudo();
   return {
     '@context': 'https://schema.org',
     '@type': 'AboutPage',
     url: `${site.url}/sobre`,
     inLanguage: 'pt-BR',
-    name: 'Sobre o CADe UFPel',
+    name: paginas.sobre.seo.titulo,
     mainEntity: {
       '@type': 'Organization',
       name: site.nomeCompleto,
@@ -123,25 +124,25 @@ export async function ldSobre() {
 }
 
 export async function ldMigalhasSobre() {
-  const { site } = await getConteudo();
+  const { site, paginas } = await getConteudo();
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: site.nome, item: `${site.url}/` },
-      { '@type': 'ListItem', position: 2, name: 'Sobre o CADe', item: `${site.url}/sobre` },
+      { '@type': 'ListItem', position: 2, name: paginas.sobre.seo.titulo, item: `${site.url}/sobre` },
     ],
   };
 }
 
 export async function ldContato() {
-  const { site } = await getConteudo();
+  const { site, paginas } = await getConteudo();
   return {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
     url: `${site.url}/contato`,
     inLanguage: 'pt-BR',
-    name: 'Contato — CADe UFPel',
+    name: paginas.contato.seo.titulo,
     mainEntity: {
       '@type': 'Organization',
       name: site.nomeCompleto,
@@ -164,14 +165,15 @@ export async function ldContato() {
 }
 
 export async function ldPrivacidade() {
-  const { site } = await getConteudo();
+  const { site, paginas } = await getConteudo();
   return {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     url: `${site.url}/privacidade`,
     inLanguage: 'pt-BR',
-    name: 'Política de privacidade — CADe UFPel',
-    dateModified: '2026-09-03',
+    name: paginas.privacidade.seo.titulo,
+    // shortcut: data fixa, igual à "Última atualização" da nota em /privacidade; atualizar junto com ela.
+    dateModified: '2026-09-09',
     publisher: {
       '@type': 'Organization',
       name: site.nomeCompleto,
@@ -192,13 +194,13 @@ export async function ldPrivacidade() {
 }
 
 export async function ldGaleria() {
-  const { site } = await getConteudo();
+  const { site, galeria } = await getConteudo();
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     url: `${site.url}/galeria`,
     inLanguage: 'pt-BR',
-    name: 'Galeria — CADe UFPel',
+    name: galeria.seo.titulo,
     publisher: {
       '@type': 'Organization',
       name: site.nomeCompleto,

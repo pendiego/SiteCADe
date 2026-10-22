@@ -112,7 +112,7 @@ export async function mdInstitucional(slug: Institucional): Promise<string> {
   const secoes = p.secoes
     .map((s) => {
       const base = `## ${s.titulo}\n\n${s.corpo}`;
-      return s.estilo === 'gestao' ? `${base}\n\n${equipeMd(quemSomos.membros)}` : base;
+      return s.estilo === 'gestao' ? `${base}\n\n${equipeMd(quemSomos)}` : base;
     })
     .join('\n\n');
   return absolutizar(

@@ -19,7 +19,7 @@ export default async function PaginaInstitucional({ slug }: Props) {
     return (
       <div key={i} style={{ display: 'contents' }}>
         <div style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: html }} />
-        {secao.estilo === 'gestao' && <EquipeGestao membros={quemSomos.membros} />}
+        {secao.estilo === 'gestao' && <EquipeGestao quemSomos={quemSomos} />}
       </div>
     );
   });

@@ -501,6 +501,22 @@ export interface InicioQuemSomo {
   titulo: string;
   texto: string;
   gestaoTitulo: string;
+  /**
+   * Ex.: "17 pessoas". Vazio usa "pessoas".
+   */
+  contagemRotulo?: string | null;
+  /**
+   * Vazio usa "Conheça o CADe UFPel".
+   */
+  linkSobreRotulo?: string | null;
+  /**
+   * Vazio usa "Coordenação".
+   */
+  equipeCoordenacaoTitulo?: string | null;
+  /**
+   * Vazio usa "Membros".
+   */
+  equipeMembrosTitulo?: string | null;
   membros: {
     nome: string;
     foto: number | Midia;
@@ -1138,6 +1154,10 @@ export interface InicioQuemSomosSelect<T extends boolean = true> {
   titulo?: T;
   texto?: T;
   gestaoTitulo?: T;
+  contagemRotulo?: T;
+  linkSobreRotulo?: T;
+  equipeCoordenacaoTitulo?: T;
+  equipeMembrosTitulo?: T;
   membros?:
     | T
     | {

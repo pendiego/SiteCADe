@@ -1,9 +1,9 @@
 import Image from 'next/image';
-import { dividirEquipe } from '@/lib/equipe';
-import type { Membro } from '@/lib/tipos';
+import { dividirEquipe, titulosEquipe } from '@/lib/equipe';
+import type { InicioQuemSomos, Membro } from '@/lib/tipos';
 
 interface Props {
-  membros: Membro[];
+  quemSomos: InicioQuemSomos;
 }
 
 function slug(nome: string): string {
@@ -27,8 +27,9 @@ function idsUnicos(membros: Membro[], prefixo: string): string[] {
   });
 }
 
-export default function EquipeGestao({ membros }: Props) {
-  const { coordenacao, demais } = dividirEquipe(membros);
+export default function EquipeGestao({ quemSomos }: Props) {
+  const titulos = titulosEquipe(quemSomos);
+  const { coordenacao, demais } = dividirEquipe(quemSomos.membros);
   const idsCoord = idsUnicos(coordenacao, 'sobre-coord');
   const idsDemais = idsUnicos(demais, 'sobre-membro');
 
@@ -36,7 +37,7 @@ export default function EquipeGestao({ membros }: Props) {
     <div className="equipe" data-od-id="sobre-equipe">
       {coordenacao.length > 0 && (
         <>
-          <h3>Coordenação</h3>
+          <h3>{titulos.coordenacao}</h3>
           <ul className="equipe-coord" data-od-id="sobre-coordenacao">
             {coordenacao.map((m, i) => (
               <li key={idsCoord[i]} data-od-id={idsCoord[i]}>
@@ -57,7 +58,7 @@ export default function EquipeGestao({ membros }: Props) {
       )}
       {demais.length > 0 && (
         <>
-          <h3>Membros</h3>
+          <h3>{titulos.membros}</h3>
           <ul className="equipe-membros" data-od-id="sobre-membros">
             {demais.map((m, i) => (
               <li key={idsDemais[i]} data-od-id={idsDemais[i]}>
